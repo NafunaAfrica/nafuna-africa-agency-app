@@ -16,7 +16,7 @@ const props = defineProps({
 <template>
 	<NuxtImg v-if="logo" :src="logo" alt="" />
 	<template v-else>
-		<svg width="300" height="75" viewBox="0 0 300 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+		<svg width="300" height="75" viewBox="0 0 300 75" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
 			<!-- Nafuna Africa Logo -->
 			<!-- Left circular design with X pattern -->
 			<g>

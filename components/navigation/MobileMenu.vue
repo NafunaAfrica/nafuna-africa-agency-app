@@ -67,7 +67,7 @@ watch(
 			<div class="relative w-full px-6 pt-6 flex justify-between border-b dark:border-gray-700 items-start">
 				<div>
 					<NuxtLink href="/">
-						<Logo class="h-6 dark:text-white" />
+						<Logo class="h-8 dark:text-white" />
 					</NuxtLink>
 					<VText v-if="globals?.tagline" class="pb-4 mt-2">
 						{{ globals.tagline }}

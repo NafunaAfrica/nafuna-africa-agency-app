@@ -56,8 +56,10 @@ const page = computed(() => {
 
 const posts = computed(() => {
 	// If the featured post is in the posts array, remove it
-	const posts = unref(data)?.posts.filter((post) => post.id !== unref(page)?.featured_post?.id);
-	return posts;
+	// Also filter out any null or invalid posts
+	const posts = unref(data)?.posts
+		.filter((post) => post && post.slug && post.id !== unref(page)?.featured_post?.id);
+	return posts || [];
 });
 
 // Compute metadata here to make it easier to populate all the different SEO tags

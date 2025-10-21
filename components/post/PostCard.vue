@@ -3,7 +3,7 @@ import type { Post, PostType, Category, Team } from '~/types';
 
 const props = withDefaults(
 	defineProps<{
-		post: Post;
+		post: Post | null;
 		direction?: 'horizontal' | 'vertical';
 	}>(),
 	{
@@ -18,10 +18,13 @@ const iconMap: Record<PostType, string> = {
 };
 
 const postCategory = computed(() => {
-	return (unref(props.post.category) as Category) ?? null;
+	return props.post ? (unref(props.post.category) as Category) ?? null : null;
 });
 </script>
 <template>
+	<div v-if="!post" class="flex items-center justify-center h-56 bg-gray-100 dark:bg-gray-800 rounded-card">
+		<p class="text-gray-500 dark:text-gray-400">Post not available</p>
+	</div>
 	<figure
 		:class="[
 			{
@@ -39,7 +42,7 @@ const postCategory = computed(() => {
 				},
 				'relative block overflow-hidden border dark:border-gray-700 group rounded-card flex-shrink-0',
 			]"
-			:href="`/posts/${post.slug}`"
+			:href="post?.slug ? `/posts/${post.slug}` : '#'"
 		>
 			<NuxtImg
 				v-if="post.image"
@@ -68,7 +71,7 @@ const postCategory = computed(() => {
 		</NuxtLink>
 
 		<div class="flex flex-col justify-between h-full gap-3">
-			<NuxtLink class="space-y-4" :href="`/posts/${post.slug}`">
+			<NuxtLink class="space-y-4" :href="post?.slug ? `/posts/${post.slug}` : '#'">
 				<TypographyHeadline
 					v-if="post.title"
 					:content="post.title"

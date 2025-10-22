@@ -3,7 +3,7 @@ import type { Post, PostType, Category, Team } from '~/types';
 
 const props = withDefaults(
 	defineProps<{
-		post: Post | null;
+		post: Post;
 		direction?: 'horizontal' | 'vertical';
 	}>(),
 	{
@@ -18,13 +18,10 @@ const iconMap: Record<PostType, string> = {
 };
 
 const postCategory = computed(() => {
-	return props.post ? (unref(props.post.category) as Category) ?? null : null;
+	return (unref(props.post.category) as Category) ?? null;
 });
 </script>
 <template>
-	<div v-if="!post" class="flex items-center justify-center h-56 bg-gray-100 dark:bg-gray-800 rounded-card">
-		<p class="text-gray-500 dark:text-gray-400">Post not available</p>
-	</div>
 	<figure
 		:class="[
 			{
@@ -42,10 +39,10 @@ const postCategory = computed(() => {
 				},
 				'relative block overflow-hidden border dark:border-gray-700 group rounded-card flex-shrink-0',
 			]"
-			:href="post?.slug ? `/posts/${post.slug}` : '#'"
+			:href="`/posts/${post.slug}`"
 		>
 			<NuxtImg
-				v-if="post?.image"
+				v-if="post.image"
 				class="relative flex-shrink-0 object-cover w-full h-full transition duration-300 saturate-0 group-hover:opacity-75"
 				:src="safeRelationId(post.image) as string"
 				:alt="safeRelation(post.image)?.alt ?? ''"
@@ -61,9 +58,9 @@ const postCategory = computed(() => {
 			>
 				{{ postCategory.title }}
 			</Category>
-			<div v-if="post?.type" class="absolute top-0 right-0 p-1.5 mt-4 mr-4 rounded-button bg-gray-900/50">
+			<div v-if="post.type" class="absolute top-0 right-0 p-1.5 mt-4 mr-4 rounded-button bg-gray-900/50">
 				<UIcon
-					v-if="post?.type"
+					v-if="post.type"
 					:name="iconMap[post.type ?? 'blog'] ?? 'material-symbols:article-outline-rounded'"
 					class="w-6 h-6 text-white"
 				/>
@@ -71,9 +68,9 @@ const postCategory = computed(() => {
 		</NuxtLink>
 
 		<div class="flex flex-col justify-between h-full gap-3">
-			<NuxtLink class="space-y-4" :href="post?.slug ? `/posts/${post.slug}` : '#'">
+			<NuxtLink class="space-y-4" :href="`/posts/${post.slug}`">
 				<TypographyHeadline
-					v-if="post?.title"
+					v-if="post.title"
 					:content="post.title"
 					class="group-hover:text-primary"
 					size="xs"
@@ -84,7 +81,7 @@ const postCategory = computed(() => {
 				</VText>
 			</NuxtLink>
 
-			<Author v-if="post?.author" size="sm" :author="post.author as Team" />
+			<Author v-if="post.author" size="sm" :author="post.author as Team" />
 		</div>
 	</figure>
 </template>

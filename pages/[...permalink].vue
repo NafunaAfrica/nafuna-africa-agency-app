@@ -182,13 +182,20 @@ if (!unref(page)) {
 	throw createError({ statusCode: 404, statusMessage: 'Page Not Found' });
 }
 
+// OG Image with proper priority handling
+const ogImage = useOgImage(
+	unref(page)?.seo,           // SEO og_image (highest priority)
+	undefined,                  // No content image for pages
+	globals?.og_image           // Global fallback (lowest priority)
+);
+
 // Compute metadata here to make it easier to populate all the different SEO tags
 const metadata = computed(() => {
 	const pageData = unref(page);
 	return {
 		title: pageData?.seo?.title ?? pageData?.title ?? undefined,
 		description: pageData?.seo?.meta_description ?? pageData?.summary ?? undefined,
-		image: globals?.og_image ? fileUrl(globals.og_image) : undefined,
+		image: unref(ogImage),
 		canonical: pageData?.seo?.canonical_url ?? url,
 	};
 });

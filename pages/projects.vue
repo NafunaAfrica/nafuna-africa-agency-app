@@ -41,6 +41,13 @@ const page = computed(() => {
 	return unref(data)?.page as PagesProjects;
 });
 
+// OG Image with proper priority handling
+const ogImage = useOgImage(
+	unref(page)?.seo,           // SEO og_image (highest priority)
+	undefined,                  // No content image for projects page
+	globals?.og_image           // Global fallback (lowest priority)
+);
+
 // Compute metadata here to make it easier to populate all the different SEO tags
 const metadata = computed(() => {
 	const pageData = unref(page);
@@ -48,7 +55,7 @@ const metadata = computed(() => {
 	return {
 		title: seo?.title ?? pageData?.title ?? undefined,
 		description: (seo?.meta_description ?? pageData.headline) ? stripHTML(pageData?.headline as string) : undefined,
-		image: globals?.og_image ? fileUrl(globals?.og_image) : undefined,
+		image: unref(ogImage),
 	};
 });
 

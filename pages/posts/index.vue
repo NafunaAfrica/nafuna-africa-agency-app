@@ -60,13 +60,20 @@ const posts = computed(() => {
 	return posts;
 });
 
+// OG Image with proper priority handling
+const ogImage = useOgImage(
+	unref(page)?.seo,           // SEO og_image (highest priority)
+	undefined,                  // No content image for index page
+	globals?.og_image           // Global fallback (lowest priority)
+);
+
 // Compute metadata here to make it easier to populate all the different SEO tags
 const metadata = computed(() => {
 	const pageData = unref(page);
 	return {
 		title: pageData?.seo?.title ?? pageData?.title ?? undefined,
 		description: pageData?.seo?.meta_description ?? stripHTML(pageData?.headline) ?? undefined,
-		image: globals?.og_image ? fileUrl(globals?.og_image) : undefined,
+		image: unref(ogImage),
 	};
 });
 

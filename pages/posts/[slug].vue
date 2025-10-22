@@ -45,6 +45,14 @@ const { data: page } = await useAsyncData(
 	},
 );
 
+// OG Image with proper priority handling
+const { globals } = useAppConfig();
+const ogImage = useOgImage(
+	unref(page)?.seo,           // SEO og_image (highest priority)
+	unref(page)?.image,         // Post featured image (medium priority)
+	globals?.og_image           // Global fallback (lowest priority)
+);
+
 // Compute metadata here to make it easier to populate all the different SEO tags
 const metadata = computed(() => {
 	const pageData = unref(page);
@@ -53,7 +61,7 @@ const metadata = computed(() => {
 	return {
 		title: seo?.title ?? pageData?.title ?? undefined,
 		description: seo?.meta_description ?? pageData?.summary ?? undefined,
-		image: pageData?.image ? fileUrl(pageData?.image as any) : undefined,
+		image: unref(ogImage),
 		authorImage: author?.image ? fileUrl(author.image as any) : undefined,
 		authorName: author?.name ?? undefined,
 		category: (pageData?.category as Category) ?? undefined,

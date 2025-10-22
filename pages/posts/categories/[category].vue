@@ -67,13 +67,20 @@ const { data } = await useAsyncData(
 const category = computed(() => unref(data)?.category ?? {});
 const posts = computed(() => unref(data)?.posts ?? []);
 
+// OG Image with proper priority handling
+const ogImage = useOgImage(
+	unref(category)?.seo,       // SEO og_image (highest priority)
+	undefined,                  // No content image for category page
+	globals?.og_image           // Global fallback (lowest priority)
+);
+
 // Compute metadata here to make it easier to populate all the different SEO tags
 const metadata = computed(() => {
 	const pageData = unref(category);
 	return {
 		title: pageData?.seo?.title ?? pageData?.title ?? undefined,
 		description: pageData?.seo?.meta_description ?? stripHTML(pageData?.headline) ?? undefined,
-		image: globals?.og_image ? fileUrl(globals?.og_image) : undefined,
+		image: unref(ogImage),
 	};
 });
 

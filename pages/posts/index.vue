@@ -8,7 +8,7 @@ const { data } = await useAsyncData(
 	() => {
 		const postPromise = useDirectus(
 			readItems('posts', {
-				sort: ['date_published'],
+				sort: ['-date_published'],
 				fields: [
 					'*',
 					{

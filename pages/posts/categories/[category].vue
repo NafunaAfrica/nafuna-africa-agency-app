@@ -36,7 +36,7 @@ const { data } = await useAsyncData(
 						},
 					},
 				},
-				sort: ['date_published'],
+				sort: ['-date_published'],
 				fields: [
 					'title',
 					'slug',

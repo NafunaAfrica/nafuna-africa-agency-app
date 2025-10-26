@@ -13,6 +13,7 @@ export default defineNuxtConfig({
 	extends: [
 		'./layers/proposals', // Proposals module
 		'./layers/portal', // Client portal module
+		'./layers/lms', // Learning Management System
 	],
 
 	components: [

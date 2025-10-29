@@ -11,10 +11,12 @@ const {
 	data: proposal,
 	pending,
 	error,
-} = await useAsyncData(path, () => {
-	return useDirectus(
-		readItem('os_proposals', params.id as string, {
-			fields: [
+} = await useAsyncData(path, async () => {
+	try {
+		console.log('Fetching proposal with ID:', params.id);
+		const result = await useDirectus(
+			readItem('os_proposals', params.id as string, {
+				fields: [
 				'name',
 				{
 					organization: ['name', 'logo', 'brand_color'],
@@ -90,13 +92,52 @@ const {
 					],
 				},
 			],
-		}),
-	);
+			})
+		);
+		console.log('Directus query result:', result);
+		return result;
+	} catch (err) {
+		console.error('Directus query failed:', err);
+		throw err;
+	}
 });
 
 if (!proposal.value) {
-	// console.log(error.value.cause);
-	throw createError({ statusCode: 404, statusMessage: 'Page Not Found' });
+	// Enhanced debugging for existing data
+	console.error('Proposal query returned null/undefined:', {
+		id: params.id,
+		path,
+		proposalValue: proposal.value,
+		errorValue: error.value,
+		pendingValue: pending.value
+	});
+	
+	// Let's try a simpler query to test connection
+	try {
+		console.log('Testing basic Directus connection...');
+		const testQuery = await useDirectus(
+			readItems('os_proposals', {
+				fields: ['id', 'name'],
+				limit: 5
+			})
+		);
+		console.log('Available proposals:', testQuery);
+		
+		// Try to find our specific proposal
+		const specificProposal = testQuery?.find((p: any) => p.id === params.id);
+		if (specificProposal) {
+			console.log('Found proposal in list but detailed query failed:', specificProposal);
+		} else {
+			console.log('Proposal ID not found in available proposals');
+		}
+	} catch (testError) {
+		console.error('Basic Directus connection test failed:', testError);
+	}
+	
+	throw createError({ 
+		statusCode: 404, 
+		statusMessage: `Proposal '${params.id}' not found. Check console for debugging info.` 
+	});
 }
 </script>
 <template>

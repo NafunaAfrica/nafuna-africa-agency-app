@@ -91,6 +91,14 @@ export default defineNuxtConfig({
 		download: true,
 	},
 
+	// Site Configuration - Required for proper OG image URLs
+	site: {
+		url: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+		name: 'Nafuna Africa',
+		description: 'Your digital agency partner',
+		defaultLocale: 'en',
+	},
+
 	// OG Image Configuration - https://nuxtseo.com/og-image/getting-started/installation
 	ogImage: {
 		defaults: {

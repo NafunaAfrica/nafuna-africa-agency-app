@@ -37,7 +37,6 @@ const {
 			);
 			return fullResult;
 		}
-		);
 		console.log('Directus query result:', result);
 		return result;
 	} catch (err) {

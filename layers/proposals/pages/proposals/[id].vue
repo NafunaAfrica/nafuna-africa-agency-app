@@ -13,7 +13,26 @@ const {
 	error,
 } = await useAsyncData(path, async () => {
 	try {
+		// Debug environment variables
+		console.log('Environment check:', {
+			DIRECTUS_URL: process.env.DIRECTUS_URL,
+			DIRECTUS_SERVER_TOKEN: process.env.DIRECTUS_SERVER_TOKEN ? 'Present' : 'Missing',
+			token_length: process.env.DIRECTUS_SERVER_TOKEN?.length
+		});
+		
 		console.log('Fetching proposal with ID:', params.id);
+		
+		// Test basic Directus connection first
+		console.log('Testing basic Directus connection...');
+		try {
+			const testConnection = await useDirectus(
+				$fetch('/server/health')
+			);
+			console.log('Directus connection test:', testConnection);
+		} catch (connErr) {
+			console.error('Directus connection failed:', connErr);
+		}
+		
 		// Simplified query to test basic access first
 		console.log('Testing simplified proposal query...');
 		const result = await useDirectus(

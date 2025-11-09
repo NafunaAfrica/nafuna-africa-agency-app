@@ -11,15 +11,22 @@ const {
 	data: proposal,
 	pending,
 	error,
-} = await useAsyncData(path, () => {
-	return useDirectus(
-		readItem('os_proposals', params.id as string, {
-			fields: [
-				'name',
-				{
-					organization: ['name', 'logo', 'brand_color'],
-					owner: ['first_name', 'last_name', 'avatar', 'title'],
-					blocks: [
+} = await useAsyncData(path, async () => {
+	try {
+		// Try to get basic data first
+		const result = await useDirectus(
+			readItem('os_proposals', params.id as string, {
+				fields: [
+					'*',
+					'organization.name',
+					'organization.logo', 
+					'organization.brand_color',
+					'owner.first_name',
+					'owner.last_name',
+					'owner.avatar',
+					'owner.title',
+					{
+						blocks: [
 						'collection',
 						{
 							item: {
@@ -88,10 +95,20 @@ const {
 							},
 						},
 					],
-				},
-			],
+					},
+				],
 		}),
 	);
+	
+	console.log('Proposal data loaded:', result);
+	console.log('Organization:', result?.organization);
+	console.log('Owner:', result?.owner);
+	
+	return result;
+	} catch (err) {
+		console.error('Failed to load proposal:', err);
+		throw err;
+	}
 });
 
 if (!proposal.value) {

@@ -5,58 +5,98 @@ definePageMeta({
 	layout: 'proposal',
 });
 
-const { params } = useRoute();
+const { params, path } = useRoute();
 
 const {
 	data: proposal,
 	pending,
 	error,
-} = await useAsyncData(`proposal-${params.id}`, async () => {
-	try {
-		console.log('Fetching proposal:', params.id);
-		
-		// Try basic fields first
-		const basicResult = await useDirectus(
-			readItem('os_proposals', params.id as string, {
-				fields: ['id', 'name', 'status', 'organization', 'owner']
-			})
-		);
-		
-		console.log('Basic proposal data:', basicResult);
-		
-		// If basic works, try with relations
-		if (basicResult) {
-			try {
-				const fullResult = await useDirectus(
-					readItem('os_proposals', params.id as string, {
-						fields: [
-							'*',
-							'organization.name',
-							'owner.first_name',
-							'owner.last_name'
-						]
-					})
-				);
-				console.log('Full proposal data:', fullResult);
-				return fullResult;
-			} catch (relationErr) {
-				console.log('Relations failed, using basic data:', relationErr);
-				return basicResult;
-			}
-		}
-		
-		return basicResult;
-	} catch (err) {
-		console.error('Proposal fetch failed:', err);
-		throw err;
-	}
+} = await useAsyncData(path, () => {
+	return useDirectus(
+		readItem('os_proposals', params.id as string, {
+			fields: [
+				'name',
+				{
+					organization: ['name', 'logo', 'brand_color'],
+					owner: ['first_name', 'last_name', 'avatar', 'title'],
+					blocks: [
+						'collection',
+						{
+							item: {
+								block_hero: ['id', 'title', 'headline', 'content', 'image', 'buttons', 'image_position'],
+								block_faqs: ['id', 'title', 'faqs', 'headline', 'alignment'],
+								block_richtext: ['id', 'title', 'headline', 'content', 'alignment'],
+								block_testimonials: [
+									'id',
+									'title',
+									'headline',
+									{
+										testimonials: [
+											{
+												testimonials_id: [
+													'id',
+													'title',
+													'subtitle',
+													'content',
+													'company',
+													'company_logo',
+													{ image: ['id', 'title', 'description'] },
+												],
+											},
+										],
+									},
+								],
+								block_quote: ['id', 'title', 'subtitle', 'content'],
+								block_cta: ['id', 'title', 'headline', 'content', 'buttons'],
+								block_form: ['id', 'title', 'headline', { form: ['*'] }],
+								block_logocloud: ['id', 'title', 'headline', { logos: ['*'] }],
+								block_gallery: [
+									'id',
+									'title',
+									'headline',
+									{
+										gallery_items: [
+											{
+												directus_files_id: ['id', 'title', 'description'],
+											},
+										],
+									},
+								],
+								block_steps: [
+									'id',
+									'title',
+									'headline',
+									'show_step_numbers',
+									'alternate_image_position',
+									{
+										steps: ['id', 'title', 'content', 'image'],
+									},
+								],
+								block_columns: [
+									'id',
+									'title',
+									'headline',
+									{
+										rows: ['title', 'headline', 'content', 'image_position', { image: ['id', 'title', 'description'] }],
+									},
+								],
+								block_divider: ['id', 'title'],
+								block_team: ['*'],
+								block_html: ['*'],
+								block_video: ['*'],
+								block_cardgroup: ['*'],
+							},
+						},
+					],
+				},
+			],
+		}),
+	);
 });
 
-if (error.value) {
-	throw createError({ 
-		statusCode: 404, 
-		statusMessage: `Proposal not found` 
-	});
+if (!proposal.value) {
+	// console.log(error.value.cause);
+	throw createError({ statusCode: 404, statusMessage: 'Page Not Found' });
 }
 </script>
 <template>

@@ -2,9 +2,9 @@
 import type { User } from '~/types';
 
 export interface HeroProps {
-	name?: string;
-	organization?: string;
-	owner?: User;
+	name: string;
+	organization: string;
+	owner: User;
 }
 
 defineProps<HeroProps>();
@@ -19,10 +19,10 @@ defineProps<HeroProps>();
 		<div class="relative flex flex-col justify-center">
 			<Logo class="h-6 mx-auto dark:text-white text-gray" />
 			<div class="mt-12 space-y-6 text-center">
-				<TypographyHeadline :content="name || 'Proposal'" size="title" />
+				<TypographyHeadline :content="name" size="title" />
 				<div class="flex flex-col items-center justify-center space-y-2">
 					<TypographyTitle>For:</TypographyTitle>
-					<TypographyHeadline :content="organization || 'Client'" />
+					<TypographyHeadline :content="organization" />
 				</div>
 				<VDivider />
 				<div class="flex flex-col items-center justify-center space-y-2">

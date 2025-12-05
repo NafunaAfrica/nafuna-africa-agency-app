@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { createUser, createItem } from '@directus/sdk'
-
 useHead({
   title: 'Register - Nafuna Campus'
 })
@@ -81,43 +79,31 @@ const handleSubmit = async () => {
   isLoading.value = true
   error.value = null
 
-  const config = useRuntimeConfig()
-  const campusRoleId = config.public.campusRoleId
-
   try {
-    // Create user account with campus role
-    await useDirectus(
-      createUser({
+    // Call server API to create user (requires admin token)
+    const response = await $fetch('/api/campus/register', {
+      method: 'POST',
+      body: {
         first_name: form.first_name,
         last_name: form.last_name,
         email: form.email,
         password: form.password,
-        role: campusRoleId
-      })
-    )
+        experience_level: form.experience_level,
+        expertise_areas: form.expertise_areas,
+        learning_goals: form.learning_goals,
+        referral_source: form.referral_source,
+        notifications_enabled: form.notifications_enabled
+      }
+    })
 
-    // Login
-    await login({ email: form.email, password: form.password })
-
-    // Create campus_users profile
-    const { user } = useAuth()
-    if (user.value?.id) {
-      await useDirectus(
-        createItem('campus_users', {
-          user_id: user.value.id,
-          experience_level: form.experience_level,
-          expertise_areas: form.expertise_areas,
-          learning_goals: form.learning_goals,
-          referral_source: form.referral_source,
-          notifications_enabled: form.notifications_enabled
-        })
-      )
+    if ((response as any).success) {
+      // Login with the new credentials
+      await login({ email: form.email, password: form.password })
+      // Redirect to student dashboard
+      router.push('/student')
     }
-
-    // Redirect to student dashboard
-    router.push('/student')
   } catch (e: any) {
-    error.value = e.message || 'Registration failed. Please try again.'
+    error.value = e.data?.message || e.message || 'Registration failed. Please try again.'
   } finally {
     isLoading.value = false
   }

@@ -5,6 +5,7 @@ import {
 	readSingleton,
 	rest,
 	createItem,
+	createUser,
 	updateItem,
 	staticToken,
 	withToken,
@@ -17,4 +18,4 @@ const directusServer = createDirectus<Schema>(directusUrl)
 	.with(rest())
 	.with(staticToken(process.env.DIRECTUS_SERVER_TOKEN as string));
 
-export { directusServer, readItem, readItems, readSingleton, createItem, updateItem, withToken };
+export { directusServer, readItem, readItems, readSingleton, createItem, createUser, updateItem, withToken };

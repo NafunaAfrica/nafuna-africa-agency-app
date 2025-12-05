@@ -3,7 +3,7 @@ useHead({
   title: 'Register - Nafuna Campus'
 })
 
-const { login } = useAuth()
+const { login } = useDirectusAuth()
 const router = useRouter()
 
 const isLoading = ref(false)
@@ -98,7 +98,7 @@ const handleSubmit = async () => {
 
     if ((response as any).success) {
       // Login with the new credentials
-      await login({ email: form.email, password: form.password })
+      await login(form.email, form.password)
       // Redirect to student dashboard
       router.push('/student')
     }

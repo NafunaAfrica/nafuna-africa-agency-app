@@ -59,14 +59,14 @@
 </template>
 
 <script setup>
-const { login } = useDirectusAuth();
+const { login, user } = useDirectusAuth();
+const config = useRuntimeConfig();
 const loading = ref(false);
 const error = ref(null);
 
-// You'll want to remove these preset credentials before you deploy your site
 const credentials = reactive({
-	email: 'ashley@example.com',
-	password: 'password',
+	email: '',
+	password: '',
 });
 
 async function attemptLogin() {
@@ -75,8 +75,17 @@ async function attemptLogin() {
 	error.value = null;
 
 	try {
-		// Be careful when using the login function because you have to pass the email and password as separate arguments instead of an object.
 		await login(email, password);
+		
+		// Role-based redirect after login
+		const campusRoleId = config.public.campusRoleId;
+		if (user.value?.role === campusRoleId) {
+			// Campus students go to student dashboard
+			window.location.href = '/student';
+		} else {
+			// Clients/others go to portal (default behavior)
+			window.location.href = '/portal';
+		}
 	} catch (err) {
 		error.value = err.message;
 	}

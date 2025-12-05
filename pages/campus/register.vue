@@ -99,8 +99,8 @@ const handleSubmit = async () => {
     if ((response as any).success) {
       // Login with the new credentials
       await login(form.email, form.password)
-      // Redirect to student dashboard
-      router.push('/student')
+      // Force redirect to student dashboard (external to bypass Directus auth redirect)
+      window.location.href = '/student'
     }
   } catch (e: any) {
     error.value = e.data?.message || e.message || 'Registration failed. Please try again.'

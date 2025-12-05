@@ -8,22 +8,17 @@ const navigation = [
   {
     label: 'Dashboard',
     icon: 'i-heroicons-home',
-    to: '/student/dashboard'
+    to: '/student'
   },
   {
     label: 'My Courses',
     icon: 'i-heroicons-academic-cap',
+    to: '/student/my-courses'
+  },
+  {
+    label: 'Browse Courses',
+    icon: 'i-heroicons-magnifying-glass',
     to: '/student/courses'
-  },
-  {
-    label: 'Assignments',
-    icon: 'i-heroicons-document-text',
-    to: '/student/assignments'
-  },
-  {
-    label: 'Live Sessions',
-    icon: 'i-heroicons-video-camera',
-    to: '/student/live-sessions'
   },
   {
     label: 'Certificates',
@@ -31,14 +26,9 @@ const navigation = [
     to: '/student/certificates'
   },
   {
-    label: 'Progress',
-    icon: 'i-heroicons-chart-bar',
-    to: '/student/progress'
-  },
-  {
-    label: 'Support',
-    icon: 'i-heroicons-chat-bubble-left-right',
-    to: '/student/support'
+    label: 'Settings',
+    icon: 'i-heroicons-cog-6-tooth',
+    to: '/student/settings'
   }
 ]
 

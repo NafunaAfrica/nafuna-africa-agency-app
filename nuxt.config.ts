@@ -45,6 +45,7 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		public: {
 			siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+			campusRoleId: process.env.NUXT_PUBLIC_CAMPUS_ROLE_ID || '',
 		},
 	},
 

@@ -1,0 +1,56 @@
+<script setup lang="ts">
+const props = defineProps<{
+  videoUrl: string
+  title?: string
+}>()
+
+const emit = defineEmits<{
+  progress: [percentage: number]
+  complete: []
+}>()
+
+// Extract YouTube video ID
+const youtubeId = computed(() => {
+  if (!props.videoUrl) return null
+  const match = props.videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/)
+  return match ? match[1] : null
+})
+
+const embedUrl = computed(() => {
+  if (youtubeId.value) {
+    return `https://www.youtube.com/embed/${youtubeId.value}?enablejsapi=1`
+  }
+  return props.videoUrl
+})
+
+const isYoutube = computed(() => !!youtubeId.value)
+</script>
+
+<template>
+  <div class="relative aspect-video bg-black rounded-lg overflow-hidden">
+    <iframe
+      v-if="isYoutube"
+      :src="embedUrl"
+      :title="title"
+      class="w-full h-full"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+    />
+    <video
+      v-else-if="videoUrl"
+      :src="videoUrl"
+      class="w-full h-full"
+      controls
+      @timeupdate="(e: Event) => {
+        const video = e.target as HTMLVideoElement
+        const pct = (video.currentTime / video.duration) * 100
+        emit('progress', pct)
+        if (pct >= 90) emit('complete')
+      }"
+    />
+    <div v-else class="flex items-center justify-center h-full text-gray-400">
+      <span>No video available</span>
+    </div>
+  </div>
+</template>

@@ -1,35 +1,49 @@
 export const useStudentData = () => {
-  // Mock data for now - replace with actual Directus queries
-  const enrolledCourses = ref([
-    {
-      id: '1',
-      title: '2D Animation Fundamentals',
-      slug: '2d-animation-fundamentals',
-      instructor: 'John Doe',
-      thumbnail: '/images/course-1.jpg',
-      progress: 65
-    },
-    {
-      id: '2', 
-      title: '3D Character Modeling',
-      slug: '3d-character-modeling',
-      instructor: 'Jane Smith',
-      thumbnail: '/images/course-2.jpg',
-      progress: 30
-    }
-  ])
+  const { fetchUserEnrollments, getEnrollmentStats } = useEnrollments()
+  const { fetchCourses } = useCourses()
 
-  const progress = ref({
-    totalCourses: 5,
-    completedCourses: 2,
-    currentCourses: 3,
-    totalHours: 120,
-    completedHours: 48
+  const enrollments = ref<any[]>([])
+  const allCourses = ref<any[]>([])
+  const stats = ref({
+    totalEnrolled: 0,
+    inProgress: 0,
+    completed: 0,
+    certificatesEarned: 0,
+    averageProgress: 0
   })
+  const isLoading = ref(false)
+  const error = ref<string | null>(null)
+
+  const loadStudentData = async () => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const [userEnrollments, courses] = await Promise.all([
+        fetchUserEnrollments(),
+        fetchCourses({ status: 'published' })
+      ])
+      enrollments.value = userEnrollments
+      allCourses.value = courses
+      stats.value = getEnrollmentStats(userEnrollments)
+    } catch (e: any) {
+      error.value = e.message || 'Failed to load data'
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const activeCourses = computed(() => enrollments.value.filter(e => e.status === 'active'))
+  const completedCourses = computed(() => enrollments.value.filter(e => e.status === 'completed'))
 
   return {
-    enrolledCourses,
-    progress
+    enrollments,
+    allCourses,
+    stats,
+    isLoading,
+    error,
+    loadStudentData,
+    activeCourses,
+    completedCourses
   }
 }
 

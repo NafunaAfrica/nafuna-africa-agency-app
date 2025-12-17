@@ -23,8 +23,9 @@ export default defineEventHandler(async (event) => {
 		});
 	}
 
-	// Get campus role ID from environment
-	const campusRoleId = process.env.NUXT_PUBLIC_CAMPUS_ROLE_ID;
+	// Get campus role ID from runtime config
+	const config = useRuntimeConfig();
+	const campusRoleId = config.public.campusRoleId;
 
 	if (!campusRoleId) {
 		throw createError({

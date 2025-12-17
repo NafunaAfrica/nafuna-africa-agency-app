@@ -2,7 +2,7 @@ import { readItems, createItem, updateItem } from '@directus/sdk'
 import type { Enrollment, EnrollmentWithRelations } from '~/types/lms'
 
 export const useEnrollments = () => {
-  const { user } = useAuth()
+  const { user } = useDirectusAuth()
 
   const fetchUserEnrollments = async (): Promise<EnrollmentWithRelations[]> => {
     if (!user.value?.id) return []

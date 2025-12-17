@@ -59,8 +59,6 @@
 </template>
 
 <script setup>
-const { login, user } = useDirectusAuth();
-const config = useRuntimeConfig();
 const loading = ref(false);
 const error = ref(null);
 
@@ -75,19 +73,24 @@ async function attemptLogin() {
 	error.value = null;
 
 	try {
-		await login(email, password);
-		
-		// Role-based redirect after login
-		const campusRoleId = config.public.campusRoleId;
-		if (user.value?.role === campusRoleId) {
-			// Campus students go to student dashboard
-			window.location.href = '/student';
-		} else {
-			// Clients/others go to portal (default behavior)
-			window.location.href = '/portal';
+		// Use server API for role-based redirect
+		const response = await $fetch('/api/campus/login', {
+			method: 'POST',
+			body: { email, password }
+		});
+
+		if (response.success) {
+			// Store tokens in cookies for Directus auth
+			const accessToken = useCookie('directus_token');
+			const refreshToken = useCookie('directus_refresh_token');
+			accessToken.value = response.access_token;
+			refreshToken.value = response.refresh_token;
+			
+			// Redirect based on role (campus students -> /student, others -> /portal)
+			window.location.href = response.redirectTo;
 		}
 	} catch (err) {
-		error.value = err.message;
+		error.value = err.data?.message || err.message || 'Login failed';
 	}
 
 	loading.value = false;

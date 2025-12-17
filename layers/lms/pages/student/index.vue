@@ -9,7 +9,7 @@ useHead({
   meta: [{ name: 'description', content: 'Your learning dashboard' }]
 })
 
-const { user } = useAuth()
+const { user } = useDirectusAuth()
 const { enrollments, allCourses, stats, isLoading, loadStudentData, activeCourses } = useStudentData()
 
 // Load data on mount

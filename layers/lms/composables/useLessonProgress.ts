@@ -2,7 +2,7 @@ import { readItems, createItem, updateItem } from '@directus/sdk'
 import type { LessonProgress, Lesson } from '~/types/lms'
 
 export const useLessonProgress = () => {
-  const { user } = useAuth()
+  const { user } = useDirectusAuth()
 
   const fetchLessonProgress = async (enrollmentId: string): Promise<LessonProgress[]> => {
     if (!user.value?.id) return []

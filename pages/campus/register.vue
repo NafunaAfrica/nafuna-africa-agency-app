@@ -3,9 +3,6 @@ useHead({
   title: 'Register - Nafuna Campus'
 })
 
-const { login } = useDirectusAuth()
-const router = useRouter()
-
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 const step = ref(1)
@@ -97,10 +94,25 @@ const handleSubmit = async () => {
     })
 
     if ((response as any).success) {
-      // Login with the new credentials
-      await login(form.email, form.password)
-      // Force redirect to student dashboard (external to bypass Directus auth redirect)
-      window.location.href = '/student'
+      // Login via server API to get role-based redirect
+      const loginResponse = await $fetch('/api/campus/login', {
+        method: 'POST',
+        body: {
+          email: form.email,
+          password: form.password
+        }
+      }) as any
+
+      if (loginResponse.success) {
+        // Store tokens in cookies for Directus auth
+        const accessToken = useCookie('directus_token')
+        const refreshToken = useCookie('directus_refresh_token')
+        accessToken.value = loginResponse.access_token
+        refreshToken.value = loginResponse.refresh_token
+        
+        // Redirect based on role
+        window.location.href = loginResponse.redirectTo
+      }
     }
   } catch (e: any) {
     error.value = e.data?.message || e.message || 'Registration failed. Please try again.'

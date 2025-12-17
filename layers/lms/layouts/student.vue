@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Student-specific layout with LMS navigation
-const { user } = useAuth()
+const { user, logout } = useDirectusAuth()
 const route = useRoute()
 
 // Student navigation items

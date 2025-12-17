@@ -22,6 +22,16 @@ export default defineEventHandler(async (event) => {
 		// Login and get tokens
 		const authResult = await client.login(email, password);
 
+		if (!authResult.access_token) {
+			throw new Error('No access token returned from Directus');
+		}
+
+		console.log('Login tokens received:', {
+			hasAccessToken: !!authResult.access_token,
+			hasRefreshToken: !!authResult.refresh_token,
+			expires: authResult.expires
+		});
+
 		// Get user info to check role
 		const userResponse = await fetch(`${directusUrl}/users/me`, {
 			headers: {

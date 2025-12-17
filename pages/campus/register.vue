@@ -105,13 +105,28 @@ const handleSubmit = async () => {
 
       if (loginResponse.success) {
         // Store tokens in cookies for Directus auth
-        const accessToken = useCookie('directus_token')
-        const refreshToken = useCookie('directus_refresh_token')
+        // Use the expires value from response (ms) or default to 15 mins
+        const maxAge = loginResponse.expires ? Math.floor(loginResponse.expires / 1000) : 900
+        console.log('Registration login success, setting cookies:', {
+           maxAge,
+           path: '/'
+        })
+
+        const accessToken = useCookie('directus_token', {
+           maxAge,
+           path: '/'
+        })
+        
+        const refreshToken = useCookie('directus_refresh_token', {
+           maxAge: 604800, // 7 days
+           path: '/'
+        })
+
         accessToken.value = loginResponse.access_token
         refreshToken.value = loginResponse.refresh_token
         
         // Redirect based on role
-        window.location.href = loginResponse.redirectTo
+        await navigateTo(loginResponse.redirectTo, { external: true })
       }
     }
   } catch (e: any) {

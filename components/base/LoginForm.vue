@@ -81,13 +81,26 @@ async function attemptLogin() {
 
 		if (response.success) {
 			// Store tokens in cookies for Directus auth
-			const accessToken = useCookie('directus_token');
-			const refreshToken = useCookie('directus_refresh_token');
+			// Use the expires value from response (ms) or default to 15 mins
+			const maxAge = response.expires ? Math.floor(response.expires / 1000) : 900;
+			
+			const accessToken = useCookie('directus_token', { 
+				maxAge, 
+				path: '/'
+			});
+			
+			const refreshToken = useCookie('directus_refresh_token', { 
+				maxAge: 604800, // 7 days
+				path: '/'
+			});
+
 			accessToken.value = response.access_token;
 			refreshToken.value = response.refresh_token;
 			
-			// Redirect based on role (campus students -> /student, others -> /portal)
-			window.location.href = response.redirectTo;
+			console.log('Login success, setting cookies and redirecting to:', response.redirectTo);
+			
+			// Redirect based on role
+			await navigateTo(response.redirectTo, { external: true });
 		}
 	} catch (err) {
 		error.value = err.data?.message || err.message || 'Login failed';

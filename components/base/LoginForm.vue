@@ -59,6 +59,7 @@
 </template>
 
 <script setup>
+const { login } = useDirectusAuth();
 const loading = ref(false);
 const error = ref(null);
 
@@ -73,37 +74,9 @@ async function attemptLogin() {
 	error.value = null;
 
 	try {
-		// Use server API for role-based redirect
-		const response = await $fetch('/api/campus/login', {
-			method: 'POST',
-			body: { email, password }
-		});
-
-		if (response.success) {
-			// Store tokens in cookies for Directus auth
-			// Use the expires value from response (ms) or default to 15 mins
-			const maxAge = response.expires ? Math.floor(response.expires / 1000) : 900;
-			
-			const accessToken = useCookie('directus_token', { 
-				maxAge, 
-				path: '/'
-			});
-			
-			const refreshToken = useCookie('directus_refresh_token', { 
-				maxAge: 604800, // 7 days
-				path: '/'
-			});
-
-			accessToken.value = response.access_token;
-			refreshToken.value = response.refresh_token;
-			
-			console.log('Login success, setting cookies and redirecting to:', response.redirectTo);
-			
-			// Redirect based on role
-			await navigateTo(response.redirectTo, { external: true });
-		}
+		await login(email, password);
 	} catch (err) {
-		error.value = err.data?.message || err.message || 'Login failed';
+		error.value = err.message || 'Login failed';
 	}
 
 	loading.value = false;

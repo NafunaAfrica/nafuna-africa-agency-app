@@ -23,15 +23,26 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 
 		const response = await $directus.login(email, password);
 
-		const returnPath = route.query.redirect?.toString();
-		const redirect = returnPath ? returnPath : '/portal';
-
 		_loggedIn.set(true);
 
-		setTimeout(async () => {
-			await fetchUser({ fields: ['*', { contacts: ['*'] }] });
-			await navigateTo(redirect);
-		}, 100);
+		// Fetch user to get role
+		await fetchUser({ fields: ['*', { contacts: ['*'] }] });
+
+		// Determine redirect based on role
+		const returnPath = route.query.redirect?.toString();
+		let redirect = returnPath || '/portal';
+
+		// If no explicit redirect, check role for campus users
+		if (!returnPath && user.value?.role) {
+			const campusRoleId = config.public.campusRoleId;
+			const userRoleId = typeof user.value.role === 'object' ? (user.value.role as any).id : user.value.role;
+			
+			if (campusRoleId && userRoleId === campusRoleId) {
+				redirect = '/student';
+			}
+		}
+
+		await navigateTo(redirect);
 	}
 
 	async function logout() {

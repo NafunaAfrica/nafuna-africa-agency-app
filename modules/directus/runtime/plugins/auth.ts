@@ -9,23 +9,37 @@ const campusRedirect = (to: any) => {
 	const { user } = useDirectusAuth();
 	const config = useRuntimeConfig();
 	
-	console.log('Campus redirect middleware running:', {
-		path: to.path,
-		hasUser: !!user.value,
-		userRole: user.value?.role,
-		campusRoleId: config.public.campusRoleId
-	});
-	
-	if (!user.value) return;
+	if (!user.value) {
+		console.log('Campus redirect: No user');
+		return;
+	}
 	
 	const campusRoleId = config.public.campusRoleId;
-	const userRoleId = typeof user.value.role === 'object' ? (user.value.role as any).id : user.value.role;
 	
-	console.log('Role comparison:', { campusRoleId, userRoleId, match: userRoleId === campusRoleId });
+	// Extract role ID - handle various formats from Directus
+	let userRoleId: string | undefined;
+	const role = user.value.role;
+	
+	console.log('Raw role value:', role, 'type:', typeof role);
+	
+	if (typeof role === 'string') {
+		userRoleId = role;
+	} else if (role && typeof role === 'object') {
+		// Could be { id: '...' } or nested
+		userRoleId = (role as any).id || (role as any).role?.id;
+	}
+	
+	// Log actual string values for debugging
+	console.log('Campus redirect check:', 
+		'path=' + to.path,
+		'campusRoleId=' + campusRoleId,
+		'userRoleId=' + userRoleId,
+		'match=' + (userRoleId === campusRoleId)
+	);
 	
 	// If campus user trying to access /portal, redirect to /campus
 	if (campusRoleId && userRoleId === campusRoleId && to.path.startsWith('/portal')) {
-		console.log('Campus user detected on /portal, redirecting to /campus');
+		console.log('Redirecting campus user to /campus');
 		return navigateTo('/campus');
 	}
 };

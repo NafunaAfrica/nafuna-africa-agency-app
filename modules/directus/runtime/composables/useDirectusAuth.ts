@@ -29,9 +29,9 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 
 			_loggedIn.set(true);
 
-			// Fetch user to get role
-			await fetchUser({ fields: ['*', { contacts: ['*'] }] });
-			console.log('User fetched:', user.value);
+			// Fetch user to get role - explicitly include role field
+			await fetchUser({ fields: ['*', 'role', { contacts: ['*'] }] });
+			console.log('User fetched:', user.value, 'role:', user.value?.role);
 
 			// Determine redirect based on role
 			const returnPath = route.query.redirect?.toString();

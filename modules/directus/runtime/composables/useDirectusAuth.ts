@@ -21,32 +21,42 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 	async function login(email: string, password: string, otp?: string) {
 		const route = useRoute();
 
-		console.log('Login attempt starting...');
-		
 		try {
 			const response = await $directus.login(email, password);
-			console.log('Login response:', response);
 
 			_loggedIn.set(true);
 
-			// Fetch user to get role - explicitly include role field
-			await fetchUser({ fields: ['*', 'role', { contacts: ['*'] }] });
-			console.log('User fetched:', user.value, 'role:', user.value?.role);
+			// Fetch user with role - use direct API call to ensure role is included
+			const userResponse = await $directus.request(
+				readMe({
+					fields: ['*', 'role'],
+				}),
+			);
+			user.value = userResponse as User;
+			
+			// Extract and cache role ID
+			let userRoleId: string | undefined;
+			if (typeof userResponse.role === 'string') {
+				userRoleId = userResponse.role;
+			} else if (userResponse.role && typeof userResponse.role === 'object') {
+				userRoleId = (userResponse.role as any).id;
+			}
+			
+			// Cache role in localStorage for middleware
+			if (process.client && userRoleId) {
+				localStorage.setItem('user_role_id', userRoleId);
+			}
+			
+			console.log('Login complete, role:', userRoleId);
 
 			// Determine redirect based on role
 			const returnPath = route.query.redirect?.toString();
 			let redirect = returnPath || '/portal';
 
 			// If no explicit redirect, check role for campus users
-			if (!returnPath && user.value?.role) {
-				const campusRoleId = config.public.campusRoleId;
-				const userRoleId = typeof user.value.role === 'object' ? (user.value.role as any).id : user.value.role;
-				
-				console.log('Role check:', { campusRoleId, userRoleId, match: userRoleId === campusRoleId });
-				
-				if (campusRoleId && userRoleId === campusRoleId) {
-					redirect = '/campus';
-				}
+			const campusRoleId = config.public.campusRoleId;
+			if (!returnPath && campusRoleId && userRoleId === campusRoleId) {
+				redirect = '/campus';
 			}
 
 			console.log('Redirecting to:', redirect);

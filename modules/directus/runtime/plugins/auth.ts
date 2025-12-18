@@ -52,7 +52,8 @@ export default defineNuxtPlugin(async () => {
 		if (initialized.value === false) {
 			const { fetchUser } = useDirectusAuth();
 
-			await fetchUser({});
+			// Include role field for campus redirect middleware
+			await fetchUser({ fields: ['*', 'role'] });
 		}
 
 		initialized.value = true;

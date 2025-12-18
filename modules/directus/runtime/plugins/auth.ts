@@ -2,7 +2,24 @@ import auth from '../middleware/auth';
 import common from '../middleware/common';
 import guest from '../middleware/guest';
 
-import { addRouteMiddleware, defineNuxtPlugin, useDirectusAuth, useRuntimeConfig, useState } from '#imports';
+import { addRouteMiddleware, defineNuxtPlugin, useDirectusAuth, useRuntimeConfig, useState, navigateTo } from '#imports';
+
+// Campus redirect middleware - redirects campus users away from /portal
+const campusRedirect = (to: any) => {
+	const { user } = useDirectusAuth();
+	const config = useRuntimeConfig();
+	
+	if (!user.value) return;
+	
+	const campusRoleId = config.public.campusRoleId;
+	const userRoleId = typeof user.value.role === 'object' ? (user.value.role as any).id : user.value.role;
+	
+	// If campus user trying to access /portal, redirect to /campus
+	if (campusRoleId && userRoleId === campusRoleId && to.path.startsWith('/portal')) {
+		console.log('Campus user detected on /portal, redirecting to /campus');
+		return navigateTo('/campus');
+	}
+};
 
 export default defineNuxtPlugin(async () => {
 	try {
@@ -15,6 +32,9 @@ export default defineNuxtPlugin(async () => {
 		});
 
 		addRouteMiddleware('guest', guest);
+		
+		// Add campus redirect middleware globally
+		addRouteMiddleware('campus-redirect', campusRedirect, { global: true });
 
 		const initialized = useState('directus-auth-initialized', () => false);
 

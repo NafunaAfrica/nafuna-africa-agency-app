@@ -42,8 +42,8 @@ const { data, pending, error, refresh } = await useAsyncData(
 	{
 		transform: ([data, count]) => {
 			return {
-				tasks: data,
-				count: parseInt(count[0].count) ?? 0,
+				tasks: data ?? [],
+				count: parseInt(count?.[0]?.count) || 0,
 			};
 		},
 	},

@@ -25,8 +25,9 @@ const {
 );
 
 const totalAmountDue = computed(() => {
-	return invoices.value?.reduce((acc, invoice) => {
-		return acc + invoice.amount_due;
+	if (!invoices.value || !Array.isArray(invoices.value)) return 0;
+	return invoices.value.reduce((acc, invoice) => {
+		return acc + (invoice.amount_due || 0);
 	}, 0);
 });
 
@@ -54,7 +55,7 @@ const columns = [
 			</dd>
 		</div>
 
-		<UTable :columns="columns" :rows="invoices as any">
+		<UTable :columns="columns" :rows="(invoices as any) ?? []">
 			<template #invoice_number-data="{ row }">
 				<UButton variant="outline" :to="`/portal/billing/invoices/${row.id}`">{{ row.invoice_number }}</UButton>
 			</template>

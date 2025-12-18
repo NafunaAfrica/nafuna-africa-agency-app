@@ -13,9 +13,9 @@ withDefaults(defineProps<AvatarProps>(), {
 const { fileUrl } = useFiles();
 </script>
 <template>
-	<div class="flex items-center flex-none group dark:text-gray-100">
+	<div v-if="user" class="flex items-center flex-none group dark:text-gray-100">
 		<div class="mr-3">
-			<UAvatar v-if="user.avatar" :size="size" :src="fileUrl(user.avatar as string)" :alt="userName(user)" />
+			<UAvatar v-if="user?.avatar" :size="size" :src="fileUrl(user.avatar as string)" :alt="userName(user)" />
 		</div>
 
 		<div

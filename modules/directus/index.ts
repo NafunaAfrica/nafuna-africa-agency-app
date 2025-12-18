@@ -158,7 +158,8 @@ export default defineNuxtModule({
 		addImportsDir(composables);
 
 		// ** Build Logic **
-		const directus = createDirectus<Schema>(joinURL(nuxt.options.runtimeConfig.public.directus.rest.baseUrl)).with(
+		const directusBaseUrl = nuxt.options.runtimeConfig.public.directus.rest.baseUrl || 'http://localhost:8055';
+		const directus = createDirectus<Schema>(joinURL(directusBaseUrl)).with(
 			rest(),
 		);
 

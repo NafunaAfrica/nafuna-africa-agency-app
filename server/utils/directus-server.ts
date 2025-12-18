@@ -12,7 +12,7 @@ import {
 } from '@directus/sdk';
 import type { Schema } from '~/types/schema';
 
-const directusUrl = process.env.DIRECTUS_URL as string;
+const directusUrl = process.env.DIRECTUS_URL || 'http://localhost:8055';
 
 const directusServer = createDirectus<Schema>(directusUrl)
 	.with(rest())

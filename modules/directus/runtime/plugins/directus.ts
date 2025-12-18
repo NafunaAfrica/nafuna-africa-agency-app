@@ -8,7 +8,9 @@ export default defineNuxtPlugin((nuxtApp) => {
 	const route = useRoute();
 	const config = useRuntimeConfig();
 
-	const baseUrl = process.client ? '/api/proxy' : joinURL(config.public.siteUrl, '/api/proxy');
+	// On client: use relative path. On server: use full URL with fallback
+	const siteUrl = config.public.siteUrl || 'http://localhost:3000';
+	const baseUrl = process.client ? '/api/proxy' : joinURL(siteUrl, '/api/proxy');
 	
 	const directus = createDirectus<Schema>(baseUrl, { globals: { fetch: $fetch } })
 		.with(authentication())

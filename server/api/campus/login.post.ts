@@ -11,7 +11,15 @@ export default defineEventHandler(async (event) => {
 		});
 	}
 
-	const directusUrl = process.env.DIRECTUS_URL as string;
+	const config = useRuntimeConfig();
+	const directusUrl = config.public.directus.rest.baseUrl;
+
+	if (!directusUrl) {
+		throw createError({
+			statusCode: 500,
+			message: 'Server configuration error: Missing Directus URL',
+		});
+	}
 
 	try {
 		// Create a fresh client for login

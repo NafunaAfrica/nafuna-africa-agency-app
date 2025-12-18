@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: 'student'
+  layout: 'campus'
 })
 
 const route = useRoute()
@@ -88,7 +88,7 @@ onMounted(loadData)
     <!-- Not Found -->
     <div v-else-if="!course" class="text-center py-12">
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Course not found</h2>
-      <NuxtLink to="/student/courses" class="text-primary-600 hover:underline mt-2 inline-block">
+      <NuxtLink to="/campus/courses" class="text-primary-600 hover:underline mt-2 inline-block">
         Browse courses
       </NuxtLink>
     </div>

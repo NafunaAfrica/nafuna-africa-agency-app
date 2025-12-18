@@ -30,7 +30,7 @@ const typeColors: Record<string, string> = {
 
 <template>
   <NuxtLink 
-    :to="`/student/course/${course.slug}`"
+    :to="`/campus/course/${course.slug}`"
     class="group block bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all overflow-hidden border border-gray-200 dark:border-gray-700"
   >
     <div class="relative aspect-video overflow-hidden">

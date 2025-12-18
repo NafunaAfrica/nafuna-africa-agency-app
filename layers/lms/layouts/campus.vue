@@ -8,27 +8,27 @@ const navigation = [
   {
     label: 'Dashboard',
     icon: 'i-heroicons-home',
-    to: '/student'
+    to: '/campus'
   },
   {
     label: 'My Courses',
     icon: 'i-heroicons-academic-cap',
-    to: '/student/my-courses'
+    to: '/campus/my-courses'
   },
   {
     label: 'Browse Courses',
     icon: 'i-heroicons-magnifying-glass',
-    to: '/student/courses'
+    to: '/campus/courses'
   },
   {
     label: 'Certificates',
     icon: 'i-heroicons-trophy',
-    to: '/student/certificates'
+    to: '/campus/certificates'
   },
   {
     label: 'Settings',
     icon: 'i-heroicons-cog-6-tooth',
-    to: '/student/settings'
+    to: '/campus/settings'
   }
 ]
 
@@ -87,7 +87,7 @@ const isMobileMenuOpen = ref(false)
         <div class="flex items-center h-16 flex-shrink-0 px-4 border-b border-gray-200 dark:border-gray-700">
           <Logo class="h-8" />
           <span class="ml-2 text-sm font-medium text-gray-600 dark:text-gray-300">
-            Student Portal
+            Campus Portal
           </span>
         </div>
         
@@ -154,8 +154,8 @@ const isMobileMenuOpen = ref(false)
             
             <!-- User menu -->
             <UDropdown :items="[
-              [{ label: 'Profile', icon: 'i-heroicons-user', to: '/student/profile' }],
-              [{ label: 'Settings', icon: 'i-heroicons-cog-6-tooth', to: '/student/settings' }],
+              [{ label: 'Profile', icon: 'i-heroicons-user', to: '/campus/profile' }],
+              [{ label: 'Settings', icon: 'i-heroicons-cog-6-tooth', to: '/campus/settings' }],
               [{ label: 'Sign out', icon: 'i-heroicons-arrow-right-on-rectangle', click: () => logout() }]
             ]">
               <UAvatar 

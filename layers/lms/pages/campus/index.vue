@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: 'student',
-  middleware: ['auth']
+  layout: 'campus',
+  middleware: 'auth'
 })
 
 useHead({
@@ -38,7 +38,7 @@ const greeting = computed(() => {
         </p>
       </div>
       <NuxtLink 
-        to="/student/courses" 
+        to="/campus/courses" 
         class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
       >
         Browse Courses
@@ -63,7 +63,7 @@ const greeting = computed(() => {
       <section v-if="activeCourses.length > 0">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Continue Learning</h2>
-          <NuxtLink to="/student/my-courses" class="text-primary-600 hover:text-primary-700 text-sm">
+          <NuxtLink to="/campus/my-courses" class="text-primary-600 hover:text-primary-700 text-sm">
             View all →
           </NuxtLink>
         </div>
@@ -82,7 +82,7 @@ const greeting = computed(() => {
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No courses yet</h3>
         <p class="text-gray-500 dark:text-gray-400 mb-4">Start your learning journey today!</p>
         <NuxtLink 
-          to="/student/courses" 
+          to="/campus/courses" 
           class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
         >
           Browse Courses
@@ -93,7 +93,7 @@ const greeting = computed(() => {
       <section v-if="allCourses.length > 0">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recommended for You</h2>
-          <NuxtLink to="/student/courses" class="text-primary-600 hover:text-primary-700 text-sm">
+          <NuxtLink to="/campus/courses" class="text-primary-600 hover:text-primary-700 text-sm">
             See all →
           </NuxtLink>
         </div>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: 'student',
-  middleware: ['auth']
+  layout: 'campus',
+  middleware: 'auth'
 })
 
 useHead({
@@ -68,7 +68,7 @@ onMounted(() => {
         <div class="text-4xl mb-4">📚</div>
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No active courses</h3>
         <p class="text-gray-500 mb-4">Start learning something new!</p>
-        <NuxtLink to="/student/courses" class="text-primary-600 hover:underline">
+        <NuxtLink to="/campus/courses" class="text-primary-600 hover:underline">
           Browse courses
         </NuxtLink>
       </div>

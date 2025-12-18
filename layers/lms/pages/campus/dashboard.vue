@@ -112,7 +112,7 @@ const formatDate = (date: string) => {
             <UBadge color="green" variant="soft">
               {{ studentStats?.level || 'Beginner' }}
             </UBadge>
-            <UButton color="orange" to="/student/courses">
+            <UButton color="orange" to="/campus/courses">
               Browse Courses
             </UButton>
           </div>
@@ -157,7 +157,7 @@ const formatDate = (date: string) => {
             <template #header>
               <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold">Current Courses</h2>
-                <UButton variant="ghost" to="/student/courses">View All</UButton>
+                <UButton variant="ghost" to="/campus/courses">View All</UButton>
               </div>
             </template>
             
@@ -166,7 +166,7 @@ const formatDate = (date: string) => {
                 v-for="course in enrolledCourses?.slice(0, 3)" 
                 :key="course.id"
                 class="flex items-center space-x-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
-                @click="navigateTo(`/student/courses/${course.slug}`)"
+                @click="navigateTo(`/campus/course/${course.slug}`)"
               >
                 <img 
                   :src="course.thumbnail" 
@@ -263,7 +263,7 @@ const formatDate = (date: string) => {
               <UButton 
                 block 
                 variant="outline" 
-                to="/student/assignments"
+                to="/campus/assignments"
                 class="justify-start"
               >
                 <UIcon name="i-heroicons-document-text" class="mr-2" />
@@ -273,7 +273,7 @@ const formatDate = (date: string) => {
               <UButton 
                 block 
                 variant="outline" 
-                to="/student/certificates"
+                to="/campus/certificates"
                 class="justify-start"
               >
                 <UIcon name="i-heroicons-academic-cap" class="mr-2" />
@@ -283,7 +283,7 @@ const formatDate = (date: string) => {
               <UButton 
                 block 
                 variant="outline" 
-                to="/student/support"
+                to="/campus/support"
                 class="justify-start"
               >
                 <UIcon name="i-heroicons-chat-bubble-left-right" class="mr-2" />

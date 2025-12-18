@@ -38,7 +38,7 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 			const userRoleId = typeof user.value.role === 'object' ? (user.value.role as any).id : user.value.role;
 			
 			if (campusRoleId && userRoleId === campusRoleId) {
-				redirect = '/student';
+				redirect = '/campus';
 			}
 		}
 

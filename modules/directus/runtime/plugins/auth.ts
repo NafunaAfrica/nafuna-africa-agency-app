@@ -9,10 +9,19 @@ const campusRedirect = (to: any) => {
 	const { user } = useDirectusAuth();
 	const config = useRuntimeConfig();
 	
+	console.log('Campus redirect middleware running:', {
+		path: to.path,
+		hasUser: !!user.value,
+		userRole: user.value?.role,
+		campusRoleId: config.public.campusRoleId
+	});
+	
 	if (!user.value) return;
 	
 	const campusRoleId = config.public.campusRoleId;
 	const userRoleId = typeof user.value.role === 'object' ? (user.value.role as any).id : user.value.role;
+	
+	console.log('Role comparison:', { campusRoleId, userRoleId, match: userRoleId === campusRoleId });
 	
 	// If campus user trying to access /portal, redirect to /campus
 	if (campusRoleId && userRoleId === campusRoleId && to.path.startsWith('/portal')) {

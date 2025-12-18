@@ -21,28 +21,40 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 	async function login(email: string, password: string, otp?: string) {
 		const route = useRoute();
 
-		const response = await $directus.login(email, password);
+		console.log('Login attempt starting...');
+		
+		try {
+			const response = await $directus.login(email, password);
+			console.log('Login response:', response);
 
-		_loggedIn.set(true);
+			_loggedIn.set(true);
 
-		// Fetch user to get role
-		await fetchUser({ fields: ['*', { contacts: ['*'] }] });
+			// Fetch user to get role
+			await fetchUser({ fields: ['*', { contacts: ['*'] }] });
+			console.log('User fetched:', user.value);
 
-		// Determine redirect based on role
-		const returnPath = route.query.redirect?.toString();
-		let redirect = returnPath || '/portal';
+			// Determine redirect based on role
+			const returnPath = route.query.redirect?.toString();
+			let redirect = returnPath || '/portal';
 
-		// If no explicit redirect, check role for campus users
-		if (!returnPath && user.value?.role) {
-			const campusRoleId = config.public.campusRoleId;
-			const userRoleId = typeof user.value.role === 'object' ? (user.value.role as any).id : user.value.role;
-			
-			if (campusRoleId && userRoleId === campusRoleId) {
-				redirect = '/campus';
+			// If no explicit redirect, check role for campus users
+			if (!returnPath && user.value?.role) {
+				const campusRoleId = config.public.campusRoleId;
+				const userRoleId = typeof user.value.role === 'object' ? (user.value.role as any).id : user.value.role;
+				
+				console.log('Role check:', { campusRoleId, userRoleId, match: userRoleId === campusRoleId });
+				
+				if (campusRoleId && userRoleId === campusRoleId) {
+					redirect = '/campus';
+				}
 			}
-		}
 
-		await navigateTo(redirect);
+			console.log('Redirecting to:', redirect);
+			await navigateTo(redirect);
+		} catch (err) {
+			console.error('Login error:', err);
+			throw err;
+		}
 	}
 
 	async function logout() {

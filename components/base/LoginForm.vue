@@ -59,7 +59,6 @@
 </template>
 
 <script setup>
-const { login } = useDirectusAuth();
 const loading = ref(false);
 const error = ref(null);
 
@@ -74,9 +73,27 @@ async function attemptLogin() {
 	error.value = null;
 
 	try {
-		await login(email, password);
+		// Use server-side login endpoint that properly handles role-based redirect
+		const response = await $fetch('/api/campus/login', {
+			method: 'POST',
+			body: { email, password },
+		});
+
+		if (response.success) {
+			// Store tokens for session
+			if (process.client) {
+				localStorage.setItem('authenticated', 'true');
+				if (response.user?.role) {
+					const roleId = typeof response.user.role === 'object' ? response.user.role.id : response.user.role;
+					localStorage.setItem('user_role_id', roleId);
+				}
+			}
+			
+			// Redirect based on server response
+			await navigateTo(response.redirectTo || '/portal');
+		}
 	} catch (err) {
-		error.value = err.message || 'Login failed';
+		error.value = err.data?.message || err.message || 'Login failed';
 	}
 
 	loading.value = false;

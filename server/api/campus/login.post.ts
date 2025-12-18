@@ -68,7 +68,7 @@ export default defineEventHandler(async (event) => {
 		});
 
 		// Determine redirect based on role
-		const redirectTo = userRoleId === configRoleId ? '/student' : '/portal';
+		const redirectTo = userRoleId === configRoleId ? '/campus' : '/portal';
 
 		return {
 			success: true,

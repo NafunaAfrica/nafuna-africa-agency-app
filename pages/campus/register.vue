@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { login } = useDirectusAuth()
+
 useHead({
   title: 'Register - Nafuna Campus'
 })
@@ -94,40 +96,8 @@ const handleSubmit = async () => {
     })
 
     if ((response as any).success) {
-      // Login via server API to get role-based redirect
-      const loginResponse = await $fetch('/api/campus/login', {
-        method: 'POST',
-        body: {
-          email: form.email,
-          password: form.password
-        }
-      }) as any
-
-      if (loginResponse.success) {
-        // Store tokens in cookies for Directus auth
-        // Use the expires value from response (ms) or default to 15 mins
-        const maxAge = loginResponse.expires ? Math.floor(loginResponse.expires / 1000) : 900
-        console.log('Registration login success, setting cookies:', {
-           maxAge,
-           path: '/'
-        })
-
-        const accessToken = useCookie('directus_token', {
-           maxAge,
-           path: '/'
-        })
-        
-        const refreshToken = useCookie('directus_refresh_token', {
-           maxAge: 604800, // 7 days
-           path: '/'
-        })
-
-        accessToken.value = loginResponse.access_token
-        refreshToken.value = loginResponse.refresh_token
-        
-        // Redirect based on role
-        await navigateTo(loginResponse.redirectTo, { external: true })
-      }
+      // Use Directus auth which handles role-based redirect properly
+      await login(form.email, form.password)
     }
   } catch (e: any) {
     error.value = e.data?.message || e.message || 'Registration failed. Please try again.'

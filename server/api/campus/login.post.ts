@@ -59,16 +59,20 @@ export default defineEventHandler(async (event) => {
 			? (user.role as any).id 
 			: user.role;
 			
-		const configRoleId = String(campusRoleId || '').trim();
+		// Convert both to strings for comparison
+		const userRoleIdStr = String(userRoleId || '').trim();
+		const configRoleIdStr = String(campusRoleId || '').trim();
 
-		console.log('Login Role Check:', {
-			userRoleId,
-			configRoleId,
-			match: userRoleId === configRoleId
-		});
+		console.log('=== SERVER LOGIN ROLE CHECK ===');
+		console.log('userRoleId (raw):', userRoleId);
+		console.log('userRoleIdStr:', userRoleIdStr);
+		console.log('campusRoleId (raw):', campusRoleId);
+		console.log('configRoleIdStr:', configRoleIdStr);
+		console.log('match:', userRoleIdStr === configRoleIdStr);
 
 		// Determine redirect based on role
-		const redirectTo = userRoleId === configRoleId ? '/campus' : '/portal';
+		const redirectTo = userRoleIdStr === configRoleIdStr ? '/campus' : '/portal';
+		console.log('redirectTo:', redirectTo);
 
 		return {
 			success: true,

@@ -61,16 +61,14 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 			console.log('match:', userRoleStr === campusRoleStr);
 		
 			let redirect = '/portal';
-		
-			// Campus users go to /campus, everyone else to /portal
-			if (campusRoleStr && userRoleStr === campusRoleStr) {
-				redirect = '/campus';
-			}
-		
-			// Override with explicit redirect if provided
-			if (returnPath) {
-				redirect = returnPath;
-			}
+	
+		// Campus users ALWAYS go to /campus - ignore any redirect query
+		if (campusRoleStr && userRoleStr === campusRoleStr) {
+			redirect = '/campus';
+		} else if (returnPath && !returnPath.startsWith('/campus')) {
+			// Only use redirect query for non-campus users, and don't let them into /campus
+			redirect = returnPath;
+		}
 
 			console.log('Final redirect:', redirect);
 			await navigateTo(redirect);

@@ -44,31 +44,31 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 			
 			// Cache role in localStorage for middleware
 			if (process.client && userRoleId) {
-				localStorage.setItem('user_role_id', userRoleId);
+				localStorage.setItem('user_role_id', userRoleId.toString().trim());
 			}
 			
 			// Determine redirect based on role
 			const returnPath = route.query.redirect?.toString();
 			const campusRoleId = config.public.campusRoleId;
 		
-			// Convert to strings for comparison
-			const userRoleStr = String(userRoleId || '').trim();
-			const campusRoleStr = String(campusRoleId || '').trim();
+			// Direct comparison - both should be strings already
+			const userRole = userRoleId ? userRoleId.toString().trim() : '';
+			const campusRole = campusRoleId ? campusRoleId.toString().trim() : '';
 		
 			console.log('=== LOGIN DEBUG ===');
-			console.log('userRoleId:', userRoleId, '→', userRoleStr);
-			console.log('campusRoleId:', campusRoleId, '→', campusRoleStr);
-			console.log('match:', userRoleStr === campusRoleStr);
+			console.log('userRole:', userRole);
+			console.log('campusRole:', campusRole);
+			console.log('match:', userRole === campusRole);
 		
 			let redirect = '/portal';
 	
-		// Campus users ALWAYS go to /campus - ignore any redirect query
-		if (campusRoleStr && userRoleStr === campusRoleStr) {
-			redirect = '/campus';
-		} else if (returnPath && !returnPath.startsWith('/campus')) {
-			// Only use redirect query for non-campus users, and don't let them into /campus
-			redirect = returnPath;
-		}
+			// Campus users ALWAYS go to /campus - ignore any redirect query
+			if (campusRole && userRole && userRole === campusRole) {
+				redirect = '/campus';
+			} else if (returnPath && !returnPath.startsWith('/campus')) {
+				// Only use redirect query for non-campus users
+				redirect = returnPath;
+			}
 
 			console.log('Final redirect:', redirect);
 			await navigateTo(redirect);

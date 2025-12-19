@@ -14,11 +14,19 @@ const campusRedirect = async (to: any) => {
 	
 	if (!campusRoleId) return;
 	
-	// Check localStorage for cached role check
+	// Check localStorage for cached role check (use string comparison)
 	if (process.client) {
 		const cachedRole = localStorage.getItem('user_role_id');
-		if (cachedRole === campusRoleId) {
-			console.log('Campus user detected (cached), redirecting to /campus');
+		const campusRoleStr = String(campusRoleId || '').trim();
+		const cachedRoleStr = String(cachedRole || '').trim();
+		
+		console.log('=== CAMPUS REDIRECT CHECK ===');
+		console.log('cachedRole:', cachedRoleStr);
+		console.log('campusRoleId:', campusRoleStr);
+		console.log('match:', cachedRoleStr === campusRoleStr);
+		
+		if (cachedRoleStr && cachedRoleStr === campusRoleStr) {
+			console.log('Campus user detected, redirecting to /campus');
 			return navigateTo('/campus');
 		}
 	}

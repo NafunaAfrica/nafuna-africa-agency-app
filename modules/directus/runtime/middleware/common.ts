@@ -16,9 +16,9 @@ export default defineNuxtRouteMiddleware((to, from) => {
 				? (user.value.role as any).id 
 				: user.value.role;
 
-			// If user is a student, force redirect to student dashboard
+			// If user is a campus user, force redirect to campus dashboard
 			if (campusRoleId && String(userRoleId) === String(campusRoleId)) {
-				return navigateTo('/student');
+				return navigateTo('/campus');
 			}
 
 			const returnToPath = to.query.redirect?.toString();

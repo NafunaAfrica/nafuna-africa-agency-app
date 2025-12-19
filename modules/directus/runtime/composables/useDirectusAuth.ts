@@ -47,19 +47,29 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 				localStorage.setItem('user_role_id', userRoleId);
 			}
 			
-			console.log('Login complete, role:', userRoleId);
-
 			// Determine redirect based on role
 			const returnPath = route.query.redirect?.toString();
-			let redirect = returnPath || '/portal';
-
-			// If no explicit redirect, check role for campus users
 			const campusRoleId = config.public.campusRoleId;
-			if (!returnPath && campusRoleId && userRoleId === campusRoleId) {
+		
+			console.log('=== LOGIN DEBUG ===');
+			console.log('userRoleId:', userRoleId, 'type:', typeof userRoleId);
+			console.log('campusRoleId:', campusRoleId, 'type:', typeof campusRoleId);
+			console.log('returnPath:', returnPath);
+			console.log('match:', userRoleId === campusRoleId);
+		
+			let redirect = '/portal';
+		
+			// Campus users go to /campus, everyone else to /portal
+			if (campusRoleId && userRoleId === campusRoleId) {
 				redirect = '/campus';
 			}
+		
+			// Override with explicit redirect if provided
+			if (returnPath) {
+				redirect = returnPath;
+			}
 
-			console.log('Redirecting to:', redirect);
+			console.log('Final redirect:', redirect);
 			await navigateTo(redirect);
 		} catch (err) {
 			console.error('Login error:', err);

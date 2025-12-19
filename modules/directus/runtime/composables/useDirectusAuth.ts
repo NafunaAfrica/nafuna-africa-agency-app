@@ -26,21 +26,35 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 
 			_loggedIn.set(true);
 
-			// Fetch user with role - use direct API call to ensure role is included
-			const userResponse = await $directus.request(
-				readMe({
-					fields: ['*', 'role'],
-				}),
-			);
+			// Get the access token to fetch user with role via direct API call
+			const token = await $directus.getToken();
+			
+			// Fetch user with role using direct fetch to ensure role is included
+			const baseUrl = config.public.directus.rest.baseUrl;
+			const meResponse = await fetch(`${baseUrl}/users/me?fields=*,role`, {
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+			const meData = await meResponse.json();
+			const userResponse = meData.data;
+			
+			console.log('=== USER RESPONSE ===');
+			console.log('userResponse:', JSON.stringify(userResponse, null, 2));
+			console.log('userResponse.role:', userResponse?.role);
+			
 			user.value = userResponse as User;
 			
 			// Extract and cache role ID
 			let userRoleId: string | undefined;
-			if (typeof userResponse.role === 'string') {
+			if (typeof userResponse?.role === 'string') {
 				userRoleId = userResponse.role;
-			} else if (userResponse.role && typeof userResponse.role === 'object') {
+			} else if (userResponse?.role && typeof userResponse.role === 'object') {
 				userRoleId = (userResponse.role as any).id;
 			}
+			
+			console.log('Extracted userRoleId:', userRoleId);
 			
 			// Cache role in localStorage for middleware
 			if (process.client && userRoleId) {

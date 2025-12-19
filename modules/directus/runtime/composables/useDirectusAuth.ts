@@ -51,16 +51,19 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 			const returnPath = route.query.redirect?.toString();
 			const campusRoleId = config.public.campusRoleId;
 		
+			// Convert to strings for comparison
+			const userRoleStr = String(userRoleId || '').trim();
+			const campusRoleStr = String(campusRoleId || '').trim();
+		
 			console.log('=== LOGIN DEBUG ===');
-			console.log('userRoleId:', userRoleId, 'type:', typeof userRoleId);
-			console.log('campusRoleId:', campusRoleId, 'type:', typeof campusRoleId);
-			console.log('returnPath:', returnPath);
-			console.log('match:', userRoleId === campusRoleId);
+			console.log('userRoleId:', userRoleId, '→', userRoleStr);
+			console.log('campusRoleId:', campusRoleId, '→', campusRoleStr);
+			console.log('match:', userRoleStr === campusRoleStr);
 		
 			let redirect = '/portal';
 		
 			// Campus users go to /campus, everyone else to /portal
-			if (campusRoleId && userRoleId === campusRoleId) {
+			if (campusRoleStr && userRoleStr === campusRoleStr) {
 				redirect = '/campus';
 			}
 		

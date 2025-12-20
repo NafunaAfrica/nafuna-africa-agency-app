@@ -7,6 +7,27 @@ definePageMeta({
 });
 
 const { logout, user } = useDirectusAuth();
+const config = useRuntimeConfig();
+
+// CAMPUS USER REDIRECT - Direct check on page load
+onMounted(async () => {
+	const campusRoleId = config.public.campusRoleId;
+	if (!campusRoleId || !user.value) return;
+	
+	let userRoleId = user.value.role;
+	if (user.value.role && typeof user.value.role === 'object') {
+		userRoleId = user.value.role.id;
+	}
+	
+	console.log('=== PORTAL PAGE CHECK ===');
+	console.log('userRoleId:', userRoleId);
+	console.log('campusRoleId:', campusRoleId);
+	
+	if (userRoleId && String(userRoleId).trim() === String(campusRoleId).trim()) {
+		console.log('Campus user detected on portal, redirecting...');
+		window.location.href = '/campus';
+	}
+});
 
 const NuxtLink = resolveComponent('NuxtLink');
 

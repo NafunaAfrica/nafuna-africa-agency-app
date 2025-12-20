@@ -9,23 +9,35 @@ definePageMeta({
 const { logout, user } = useDirectusAuth();
 const config = useRuntimeConfig();
 
-// CAMPUS USER REDIRECT - Direct check on page load
+// CAMPUS USER REDIRECT - Fetch role directly from API
 onMounted(async () => {
 	const campusRoleId = config.public.campusRoleId;
-	if (!campusRoleId || !user.value) return;
+	if (!campusRoleId) return;
 	
-	let userRoleId = user.value.role;
-	if (user.value.role && typeof user.value.role === 'object') {
-		userRoleId = user.value.role.id;
-	}
-	
-	console.log('=== PORTAL PAGE CHECK ===');
-	console.log('userRoleId:', userRoleId);
-	console.log('campusRoleId:', campusRoleId);
-	
-	if (userRoleId && String(userRoleId).trim() === String(campusRoleId).trim()) {
-		console.log('Campus user detected on portal, redirecting...');
-		window.location.href = '/campus';
+	try {
+		// Fetch user with role directly from Directus API
+		const baseUrl = config.public.directus.rest.baseUrl;
+		const response = await $fetch(`${baseUrl}/users/me?fields=id,role`, {
+			credentials: 'include'
+		});
+		
+		const userData = response?.data || response;
+		let userRoleId = userData?.role;
+		if (userData?.role && typeof userData.role === 'object') {
+			userRoleId = userData.role.id;
+		}
+		
+		console.log('=== PORTAL PAGE CHECK ===');
+		console.log('API response:', userData);
+		console.log('userRoleId:', userRoleId);
+		console.log('campusRoleId:', campusRoleId);
+		
+		if (userRoleId && String(userRoleId).trim() === String(campusRoleId).trim()) {
+			console.log('Campus user detected on portal, redirecting to /campus');
+			window.location.href = '/campus';
+		}
+	} catch (err) {
+		console.error('Failed to fetch user role:', err);
 	}
 });
 

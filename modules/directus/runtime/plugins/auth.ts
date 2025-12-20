@@ -48,8 +48,9 @@ export default defineNuxtPlugin(async () => {
 		addRouteMiddleware('campus-redirect', campusRedirect, { global: true });
 
 		const initialized = useState('directus-auth-initialized', () => false);
+		const runtimeConfig = useRuntimeConfig();
 
-		const { _loggedIn } = useDirectusAuth();
+		const { _loggedIn, user } = useDirectusAuth();
 
 		if (initialized.value === false) {
 			const { fetchUser } = useDirectusAuth();
@@ -60,10 +61,30 @@ export default defineNuxtPlugin(async () => {
 
 		initialized.value = true;
 
-		const { user } = useDirectusAuth();
-
 		if (user.value) {
 			_loggedIn.set(true);
+			
+			// Cache user role to localStorage for middleware redirect checks
+			if (process.client && user.value.role) {
+				const userRoleId = typeof user.value.role === 'object' 
+					? (user.value.role as any).id 
+					: user.value.role;
+				
+				if (userRoleId) {
+					localStorage.setItem('user_role_id', userRoleId.toString().trim());
+					console.log('=== AUTH PLUGIN: Cached role ===', userRoleId);
+					
+					// If campus user is on /portal, redirect immediately
+					const campusRoleId = runtimeConfig.public.campusRoleId;
+					if (campusRoleId && userRoleId.toString().trim() === campusRoleId.toString().trim()) {
+						const currentPath = window.location.pathname;
+						if (currentPath.startsWith('/portal')) {
+							console.log('Campus user on /portal, redirecting to /campus');
+							window.location.href = '/campus';
+						}
+					}
+				}
+			}
 		} else {
 			_loggedIn.set(false);
 		}

@@ -58,7 +58,7 @@ export default defineNuxtConfig({
 		auth: {
 			enabled: true,
 			enableGlobalAuthMiddleware: false, // Enable auth middleware on every page
-			userFields: ['*', { contacts: ['*'] }], // Select user fields
+			userFields: ['*', 'role', { contacts: ['*'] }], // Select user fields including role for campus redirect
 			redirect: {
 				login: '/auth/signin', // Path to redirect when login is required
 				logout: '/', // Path to redirect after logout

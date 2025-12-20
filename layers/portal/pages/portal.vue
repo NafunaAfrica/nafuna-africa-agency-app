@@ -9,26 +9,25 @@ definePageMeta({
 const { logout, user } = useDirectusAuth();
 const config = useRuntimeConfig();
 
-// CAMPUS USER REDIRECT - Use server API to check role
-onMounted(async () => {
+// CAMPUS USER REDIRECT - Check user role from SDK (now includes role field via nuxt.config userFields)
+onMounted(() => {
 	const campusRoleId = config.public.campusRoleId;
-	if (!campusRoleId) return;
+	if (!campusRoleId || !user.value) return;
 	
-	try {
-		// Use Nuxt server API to fetch user role (avoids CORS)
-		const response = await $fetch('/api/campus/check-role');
-		
-		console.log('=== PORTAL PAGE CHECK ===');
-		console.log('API response:', response);
-		console.log('userRoleId:', response?.roleId);
-		console.log('campusRoleId:', campusRoleId);
-		
-		if (response?.roleId && String(response.roleId).trim() === String(campusRoleId).trim()) {
-			console.log('Campus user detected on portal, redirecting to /campus');
-			window.location.href = '/campus';
-		}
-	} catch (err) {
-		console.error('Failed to check user role:', err);
+	// Extract role ID - can be string or object
+	let userRoleId = user.value.role;
+	if (user.value.role && typeof user.value.role === 'object') {
+		userRoleId = user.value.role.id;
+	}
+	
+	console.log('=== PORTAL PAGE CHECK ===');
+	console.log('user.value:', user.value);
+	console.log('userRoleId:', userRoleId);
+	console.log('campusRoleId:', campusRoleId);
+	
+	if (userRoleId && String(userRoleId).trim() === String(campusRoleId).trim()) {
+		console.log('Campus user detected on portal, redirecting to /campus');
+		window.location.href = '/campus';
 	}
 });
 

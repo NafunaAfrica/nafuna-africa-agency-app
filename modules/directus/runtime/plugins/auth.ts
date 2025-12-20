@@ -60,12 +60,19 @@ export default defineNuxtPlugin(async () => {
 		}
 
 		initialized.value = true;
+		
+		console.log('=== AUTH PLUGIN DEBUG ===');
+		console.log('user.value:', user.value);
+		console.log('user.value?.role:', user.value?.role);
 
 		if (user.value) {
 			_loggedIn.set(true);
 			
 			// Cache user role to localStorage for middleware redirect checks
-			if (process.client && user.value.role) {
+			const userRole = user.value.role;
+			console.log('userRole from user.value:', userRole);
+			
+			if (process.client && userRole) {
 				const userRoleId = typeof user.value.role === 'object' 
 					? (user.value.role as any).id 
 					: user.value.role;

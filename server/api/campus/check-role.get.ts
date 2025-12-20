@@ -2,9 +2,19 @@ export default defineEventHandler(async (event) => {
 	const config = useRuntimeConfig();
 	const directusUrl = config.public.directus.rest.baseUrl;
 	
-	// Get the access token from cookies
+	// Get the access token from cookies - Directus stores auth in 'directus-auth' as JSON
 	const cookies = parseCookies(event);
-	const accessToken = cookies.directus_token;
+	let accessToken = null;
+	
+	try {
+		const directusAuth = cookies['directus-auth'];
+		if (directusAuth) {
+			const authData = JSON.parse(directusAuth);
+			accessToken = authData?.access_token;
+		}
+	} catch (e) {
+		console.error('Failed to parse directus-auth cookie:', e);
+	}
 	
 	if (!accessToken) {
 		return { roleId: null, error: 'Not authenticated' };

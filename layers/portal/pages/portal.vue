@@ -9,35 +9,26 @@ definePageMeta({
 const { logout, user } = useDirectusAuth();
 const config = useRuntimeConfig();
 
-// CAMPUS USER REDIRECT - Fetch role directly from API
+// CAMPUS USER REDIRECT - Use server API to check role
 onMounted(async () => {
 	const campusRoleId = config.public.campusRoleId;
 	if (!campusRoleId) return;
 	
 	try {
-		// Fetch user with role directly from Directus API
-		const baseUrl = config.public.directus.rest.baseUrl;
-		const response = await $fetch(`${baseUrl}/users/me?fields=id,role`, {
-			credentials: 'include'
-		});
-		
-		const userData = response?.data || response;
-		let userRoleId = userData?.role;
-		if (userData?.role && typeof userData.role === 'object') {
-			userRoleId = userData.role.id;
-		}
+		// Use Nuxt server API to fetch user role (avoids CORS)
+		const response = await $fetch('/api/campus/check-role');
 		
 		console.log('=== PORTAL PAGE CHECK ===');
-		console.log('API response:', userData);
-		console.log('userRoleId:', userRoleId);
+		console.log('API response:', response);
+		console.log('userRoleId:', response?.roleId);
 		console.log('campusRoleId:', campusRoleId);
 		
-		if (userRoleId && String(userRoleId).trim() === String(campusRoleId).trim()) {
+		if (response?.roleId && String(response.roleId).trim() === String(campusRoleId).trim()) {
 			console.log('Campus user detected on portal, redirecting to /campus');
 			window.location.href = '/campus';
 		}
 	} catch (err) {
-		console.error('Failed to fetch user role:', err);
+		console.error('Failed to check user role:', err);
 	}
 });
 

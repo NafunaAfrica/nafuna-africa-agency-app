@@ -26,19 +26,13 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 
 			_loggedIn.set(true);
 
-			// Get the access token to fetch user with role via direct API call
-			const token = await $directus.getToken();
-			
-			// Fetch user with role using relative URL (works for both dev and prod)
-			const meResponse = await fetch(`/api/proxy/users/me?fields=*,role`, {
-				headers: {
-					'Authorization': `Bearer ${token}`,
-					'Content-Type': 'application/json'
-				},
-				credentials: 'include'
-			});
-			const meData = await meResponse.json();
-			const userResponse = meData.data;
+			// Use SDK's readMe with explicit fields to get role
+			// The SDK handles session auth properly via cookies
+			const userResponse = await $directus.request(
+				readMe({
+					fields: ['*', 'role']
+				})
+			);
 			
 			console.log('=== USER RESPONSE ===');
 			console.log('userResponse:', JSON.stringify(userResponse, null, 2));
@@ -105,8 +99,7 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 
 	async function fetchUser(params?: object) {
 		try {
-			// Use direct fetch to ensure role field is always included
-			// The SDK's readMe sometimes doesn't return the role field properly
+			// Check if we have a valid session
 			const token = await $directus.getToken();
 			
 			if (!token) {
@@ -114,23 +107,12 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 				return;
 			}
 			
-			// Use relative URL (works for both dev and prod)
-			const meResponse = await fetch(`/api/proxy/users/me?fields=*,role`, {
-				headers: {
-					'Authorization': `Bearer ${token}`,
-					'Content-Type': 'application/json'
-				},
-				credentials: 'include'
-			});
-			
-			if (!meResponse.ok) {
-				console.error('fetchUser failed:', meResponse.status, meResponse.statusText);
-				user.value = null;
-				return;
-			}
-			
-			const meData = await meResponse.json();
-			const userResponse = meData.data;
+			// Use SDK's readMe with explicit fields - SDK handles session auth via cookies
+			const userResponse = await $directus.request(
+				readMe({
+					fields: ['*', 'role']
+				})
+			);
 			
 			console.log('=== FETCH USER DEBUG ===');
 			console.log('userResponse:', userResponse);

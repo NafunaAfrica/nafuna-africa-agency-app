@@ -29,13 +29,13 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 			// Get the access token to fetch user with role via direct API call
 			const token = await $directus.getToken();
 			
-			// Fetch user with role using direct fetch to ensure role is included
-			const baseUrl = config.public.directus.rest.baseUrl;
-			const meResponse = await fetch(`${baseUrl}/users/me?fields=*,role`, {
+			// Fetch user with role using relative URL (works for both dev and prod)
+			const meResponse = await fetch(`/api/proxy/users/me?fields=*,role`, {
 				headers: {
 					'Authorization': `Bearer ${token}`,
 					'Content-Type': 'application/json'
-				}
+				},
+				credentials: 'include'
 			});
 			const meData = await meResponse.json();
 			const userResponse = meData.data;
@@ -104,17 +104,53 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 	}
 
 	async function fetchUser(params?: object) {
-		const fields = config.public?.directus?.auth?.userFields || ['*'];
-
-		const response = await $directus.request(
-			readMe({
-				// @ts-ignore
-				fields,
-				...params,
-			}),
-		);
-
-		user.value = response as User;
+		try {
+			// Use direct fetch to ensure role field is always included
+			// The SDK's readMe sometimes doesn't return the role field properly
+			const token = await $directus.getToken();
+			
+			if (!token) {
+				user.value = null;
+				return;
+			}
+			
+			// Use relative URL (works for both dev and prod)
+			const meResponse = await fetch(`/api/proxy/users/me?fields=*,role`, {
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				credentials: 'include'
+			});
+			
+			if (!meResponse.ok) {
+				console.error('fetchUser failed:', meResponse.status, meResponse.statusText);
+				user.value = null;
+				return;
+			}
+			
+			const meData = await meResponse.json();
+			const userResponse = meData.data;
+			
+			console.log('=== FETCH USER DEBUG ===');
+			console.log('userResponse:', userResponse);
+			console.log('userResponse.role:', userResponse?.role);
+			
+			user.value = userResponse as User;
+			
+			// Cache role in localStorage for middleware
+			if (process.client && userResponse?.role) {
+				const userRoleId = typeof userResponse.role === 'object' 
+					? (userResponse.role as any).id 
+					: userResponse.role;
+				if (userRoleId) {
+					localStorage.setItem('user_role_id', userRoleId.toString().trim());
+				}
+			}
+		} catch (error) {
+			console.error('fetchUser error:', error);
+			user.value = null;
+		}
 	}
 
 	return {

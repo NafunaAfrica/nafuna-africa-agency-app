@@ -55,8 +55,8 @@ export default defineNuxtPlugin(async () => {
 		if (initialized.value === false) {
 			const { fetchUser } = useDirectusAuth();
 
-			// Include role field for campus redirect middleware
-			await fetchUser({ fields: ['*', 'role', { contacts: ['*'] }] });
+			// fetchUser now handles role caching internally
+			await fetchUser();
 		}
 
 		initialized.value = true;
@@ -68,27 +68,21 @@ export default defineNuxtPlugin(async () => {
 		if (user.value) {
 			_loggedIn.set(true);
 			
-			// Cache user role to localStorage for middleware redirect checks
-			const userRole = user.value.role;
-			console.log('userRole from user.value:', userRole);
-			
-			if (process.client && userRole) {
-				const userRoleId = typeof user.value.role === 'object' 
-					? (user.value.role as any).id 
-					: user.value.role;
+			// Check if campus user is on /portal and redirect
+			if (process.client) {
+				const userRole = user.value.role;
+				const userRoleId = typeof userRole === 'object' && userRole !== null
+					? (userRole as any).id 
+					: userRole;
 				
-				if (userRoleId) {
-					localStorage.setItem('user_role_id', userRoleId.toString().trim());
-					console.log('=== AUTH PLUGIN: Cached role ===', userRoleId);
-					
-					// If campus user is on /portal, redirect immediately
-					const campusRoleId = runtimeConfig.public.campusRoleId;
-					if (campusRoleId && userRoleId.toString().trim() === campusRoleId.toString().trim()) {
-						const currentPath = window.location.pathname;
-						if (currentPath.startsWith('/portal')) {
-							console.log('Campus user on /portal, redirecting to /campus');
-							window.location.href = '/campus';
-						}
+				const campusRoleId = runtimeConfig.public.campusRoleId;
+				
+				if (campusRoleId && userRoleId && 
+					String(userRoleId).trim() === String(campusRoleId).trim()) {
+					const currentPath = window.location.pathname;
+					if (currentPath.startsWith('/portal')) {
+						console.log('Campus user on /portal, redirecting to /campus');
+						window.location.href = '/campus';
 					}
 				}
 			}

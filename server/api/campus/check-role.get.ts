@@ -1,35 +1,32 @@
 export default defineEventHandler(async (event) => {
 	const config = useRuntimeConfig();
 	const directusUrl = config.public.directus.rest.baseUrl;
+	const serverToken = config.directusServerToken;
 	
-	// Get the access token from cookies - Directus stores auth in 'directus-auth' as JSON
-	const cookies = parseCookies(event);
-	let accessToken = null;
+	// Get user ID from query params
+	const query = getQuery(event);
+	const userId = query.userId as string;
 	
-	try {
-		const directusAuth = cookies['directus-auth'];
-		if (directusAuth) {
-			const authData = JSON.parse(directusAuth);
-			accessToken = authData?.access_token;
-		}
-	} catch (e) {
-		console.error('Failed to parse directus-auth cookie:', e);
+	if (!userId) {
+		return { roleId: null, error: 'User ID required' };
 	}
 	
-	if (!accessToken) {
-		return { roleId: null, error: 'Not authenticated' };
+	if (!serverToken) {
+		console.error('DIRECTUS_SERVER_TOKEN not configured');
+		return { roleId: null, error: 'Server configuration error' };
 	}
 	
 	try {
-		// Fetch user from Directus with role field
-		const response = await fetch(`${directusUrl}/users/me?fields=id,role`, {
+		// Use admin token to fetch user's role (bypasses permission restrictions)
+		const response = await fetch(`${directusUrl}/users/${userId}?fields=id,role`, {
 			headers: {
-				'Authorization': `Bearer ${accessToken}`,
+				'Authorization': `Bearer ${serverToken}`,
 				'Content-Type': 'application/json'
 			}
 		});
 		
 		if (!response.ok) {
+			console.error('Failed to fetch user:', response.status, response.statusText);
 			return { roleId: null, error: 'Failed to fetch user' };
 		}
 		
@@ -42,8 +39,8 @@ export default defineEventHandler(async (event) => {
 			roleId = user.role.id;
 		}
 		
-		console.log('=== CHECK ROLE API ===');
-		console.log('user:', user);
+		console.log('=== CHECK ROLE API (Admin) ===');
+		console.log('userId:', userId);
 		console.log('roleId:', roleId);
 		
 		return { roleId };

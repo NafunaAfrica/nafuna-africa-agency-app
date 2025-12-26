@@ -26,26 +26,29 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 
 			_loggedIn.set(true);
 
-			// Use SDK's readMe with explicit fields to get role
-			// The SDK handles session auth properly via cookies
+			// Get basic user info from SDK
 			const userResponse = await $directus.request(
 				readMe({
-					fields: ['*', 'role']
+					fields: ['*']
 				})
 			);
 			
 			console.log('=== USER RESPONSE ===');
-			console.log('userResponse:', JSON.stringify(userResponse, null, 2));
-			console.log('userResponse.role:', userResponse?.role);
+			console.log('userResponse:', userResponse);
 			
 			user.value = userResponse as User;
 			
-			// Extract and cache role ID
+			// Fetch role via server API (uses admin token to bypass permission restrictions)
 			let userRoleId: string | undefined;
-			if (typeof userResponse?.role === 'string') {
-				userRoleId = userResponse.role;
-			} else if (userResponse?.role && typeof userResponse.role === 'object') {
-				userRoleId = (userResponse.role as any).id;
+			if (userResponse?.id) {
+				try {
+					const roleResponse = await $fetch<{ roleId: string | null; error?: string }>(`/api/campus/check-role?userId=${userResponse.id}`);
+					console.log('=== ROLE API RESPONSE ===');
+					console.log('roleResponse:', roleResponse);
+					userRoleId = roleResponse?.roleId || undefined;
+				} catch (roleError) {
+					console.error('Failed to fetch role:', roleError);
+				}
 			}
 			
 			console.log('Extracted userRoleId:', userRoleId);
@@ -107,26 +110,29 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 				return;
 			}
 			
-			// Use SDK's readMe with explicit fields - SDK handles session auth via cookies
+			// Get basic user info from SDK
 			const userResponse = await $directus.request(
 				readMe({
-					fields: ['*', 'role']
+					fields: ['*']
 				})
 			);
 			
 			console.log('=== FETCH USER DEBUG ===');
 			console.log('userResponse:', userResponse);
-			console.log('userResponse.role:', userResponse?.role);
 			
 			user.value = userResponse as User;
 			
-			// Cache role in localStorage for middleware
-			if (process.client && userResponse?.role) {
-				const userRoleId = typeof userResponse.role === 'object' 
-					? (userResponse.role as any).id 
-					: userResponse.role;
-				if (userRoleId) {
-					localStorage.setItem('user_role_id', userRoleId.toString().trim());
+			// Fetch role via server API (uses admin token to bypass permission restrictions)
+			if (process.client && userResponse?.id) {
+				try {
+					const roleResponse = await $fetch<{ roleId: string | null; error?: string }>(`/api/campus/check-role?userId=${userResponse.id}`);
+					console.log('=== ROLE API RESPONSE (fetchUser) ===');
+					console.log('roleResponse:', roleResponse);
+					if (roleResponse?.roleId) {
+						localStorage.setItem('user_role_id', roleResponse.roleId.toString().trim());
+					}
+				} catch (roleError) {
+					console.error('Failed to fetch role:', roleError);
 				}
 			}
 		} catch (error) {

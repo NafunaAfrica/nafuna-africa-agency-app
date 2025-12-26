@@ -9,28 +9,6 @@ definePageMeta({
 const { logout, user } = useDirectusAuth();
 const config = useRuntimeConfig();
 
-// CAMPUS USER REDIRECT - Check user role from SDK (now includes role field via nuxt.config userFields)
-onMounted(() => {
-	const campusRoleId = config.public.campusRoleId;
-	if (!campusRoleId || !user.value) return;
-	
-	// Extract role ID - can be string or object
-	let userRoleId = user.value.role;
-	if (user.value.role && typeof user.value.role === 'object') {
-		userRoleId = user.value.role.id;
-	}
-	
-	console.log('=== PORTAL PAGE CHECK ===');
-	console.log('user.value:', user.value);
-	console.log('userRoleId:', userRoleId);
-	console.log('campusRoleId:', campusRoleId);
-	
-	if (userRoleId && String(userRoleId).trim() === String(campusRoleId).trim()) {
-		console.log('Campus user detected on portal, redirecting to /campus');
-		window.location.href = '/campus';
-	}
-});
-
 const NuxtLink = resolveComponent('NuxtLink');
 
 function useCommandPalette() {

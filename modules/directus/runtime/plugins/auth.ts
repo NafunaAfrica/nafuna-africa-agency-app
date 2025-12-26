@@ -6,30 +6,8 @@ import { addRouteMiddleware, defineNuxtPlugin, useDirectusAuth, useRuntimeConfig
 
 // Campus redirect middleware - redirects campus users away from /portal
 const campusRedirect = async (to: any) => {
-	// Only check on /portal routes
-	if (!to.path.startsWith('/portal')) return;
-	
-	const config = useRuntimeConfig();
-	const campusRoleId = config.public.campusRoleId;
-	
-	if (!campusRoleId) return;
-	
-	// Check localStorage for cached role check (use string comparison)
-	if (process.client) {
-		const cachedRole = localStorage.getItem('user_role_id');
-		const campusRoleStr = String(campusRoleId || '').trim();
-		const cachedRoleStr = String(cachedRole || '').trim();
-		
-		console.log('=== CAMPUS REDIRECT CHECK ===');
-		console.log('cachedRole:', cachedRoleStr);
-		console.log('campusRoleId:', campusRoleStr);
-		console.log('match:', cachedRoleStr === campusRoleStr);
-		
-		if (cachedRoleStr && cachedRoleStr === campusRoleStr) {
-			console.log('Campus user detected, redirecting to /campus');
-			return navigateTo('/campus');
-		}
-	}
+	// Logic has been moved to middleware/campus-redirect.global.ts for consistency
+	return;
 };
 
 export default defineNuxtPlugin(async () => {
@@ -43,7 +21,7 @@ export default defineNuxtPlugin(async () => {
 		});
 
 		addRouteMiddleware('guest', guest);
-		
+
 		// Add campus redirect middleware globally
 		addRouteMiddleware('campus-redirect', campusRedirect, { global: true });
 
@@ -60,24 +38,24 @@ export default defineNuxtPlugin(async () => {
 		}
 
 		initialized.value = true;
-		
+
 		console.log('=== AUTH PLUGIN DEBUG ===');
 		console.log('user.value:', user.value);
 		console.log('user.value?.role:', user.value?.role);
 
 		if (user.value) {
 			_loggedIn.set(true);
-			
+
 			// Check if campus user is on /portal and redirect
 			if (process.client) {
 				const userRole = user.value.role;
 				const userRoleId = typeof userRole === 'object' && userRole !== null
-					? (userRole as any).id 
+					? (userRole as any).id
 					: userRole;
-				
+
 				const campusRoleId = runtimeConfig.public.campusRoleId;
-				
-				if (campusRoleId && userRoleId && 
+
+				if (campusRoleId && userRoleId &&
 					String(userRoleId).trim() === String(campusRoleId).trim()) {
 					const currentPath = window.location.pathname;
 					if (currentPath.startsWith('/portal')) {

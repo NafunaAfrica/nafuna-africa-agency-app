@@ -55,30 +55,33 @@ export default defineEventHandler(async (event) => {
 
 		// Safe role extraction and comparison
 		// Handle case where role might be an object (if fields expanded) or just an ID string
-		const userRoleId = typeof user.role === 'object' && user.role !== null 
-			? (user.role as any).id 
-			: user.role;
-			
-		// Convert both to strings for comparison
-		const userRoleIdStr = String(userRoleId || '').trim();
-		const configRoleIdStr = String(campusRoleId || '').trim();
+		// Note: Detailed logging moved below
 
 		console.log('=== SERVER LOGIN ROLE CHECK ===');
-		console.log('userRoleId (raw):', userRoleId);
-		console.log('userRoleIdStr:', userRoleIdStr);
-		console.log('campusRoleId (raw):', campusRoleId);
-		console.log('configRoleIdStr:', configRoleIdStr);
-		console.log('configRoleIdStr length:', configRoleIdStr.length);
-		console.log('userRoleIdStr length:', userRoleIdStr.length);
-		console.log('match:', userRoleIdStr === configRoleIdStr);
-		console.log('NUXT_PUBLIC_CAMPUS_ROLE_ID env:', process.env.NUXT_PUBLIC_CAMPUS_ROLE_ID);
+		console.log('User Role Raw:', user.role);
+		console.log('User Role Type:', typeof user.role);
+		console.log('Campus Role Raw (Config):', campusRoleId);
 
-		// Determine redirect based on role - if no campus role configured, default to portal
+		const userRoleId = typeof user.role === 'object' && user.role !== null
+			? (user.role as any).id
+			: user.role;
+
+		const userRoleIdStr = String(userRoleId || '').trim().toLowerCase();
+		const configRoleIdStr = String(campusRoleId || '').trim().toLowerCase();
+
+		console.log('User Role ID (Calculated):', userRoleIdStr);
+		console.log('Config Role ID (Calculated):', configRoleIdStr);
+		console.log('Match Result:', userRoleIdStr === configRoleIdStr);
+
+		// Determine redirect based on role
 		let redirectTo = '/portal';
-		if (configRoleIdStr && userRoleIdStr && userRoleIdStr === configRoleIdStr) {
+		if (userRoleIdStr && configRoleIdStr && userRoleIdStr === configRoleIdStr) {
+			console.log('MATCH FOUND: Sending to /campus');
 			redirectTo = '/campus';
+		} else {
+			console.log('NO MATCH: Defaulting to /portal');
 		}
-		console.log('redirectTo:', redirectTo);
+		console.log('Final redirectTo:', redirectTo);
 
 		return {
 			success: true,

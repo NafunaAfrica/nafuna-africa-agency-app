@@ -50,7 +50,7 @@ export default defineEventHandler(async (event) => {
 		const user = userData.data;
 
 		// Get campus role ID from runtime config
-		const config = useRuntimeConfig();
+		// Note: config is already defined above, reuse it
 		const campusRoleId = config.public.campusRoleId;
 
 		// Safe role extraction and comparison
@@ -68,10 +68,16 @@ export default defineEventHandler(async (event) => {
 		console.log('userRoleIdStr:', userRoleIdStr);
 		console.log('campusRoleId (raw):', campusRoleId);
 		console.log('configRoleIdStr:', configRoleIdStr);
+		console.log('configRoleIdStr length:', configRoleIdStr.length);
+		console.log('userRoleIdStr length:', userRoleIdStr.length);
 		console.log('match:', userRoleIdStr === configRoleIdStr);
+		console.log('NUXT_PUBLIC_CAMPUS_ROLE_ID env:', process.env.NUXT_PUBLIC_CAMPUS_ROLE_ID);
 
-		// Determine redirect based on role
-		const redirectTo = userRoleIdStr === configRoleIdStr ? '/campus' : '/portal';
+		// Determine redirect based on role - if no campus role configured, default to portal
+		let redirectTo = '/portal';
+		if (configRoleIdStr && userRoleIdStr && userRoleIdStr === configRoleIdStr) {
+			redirectTo = '/campus';
+		}
 		console.log('redirectTo:', redirectTo);
 
 		return {

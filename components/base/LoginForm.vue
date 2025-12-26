@@ -59,7 +59,9 @@
 </template>
 
 <script setup>
-const { login } = useDirectusAuth();
+const { user } = useDirectusAuth();
+const nuxtApp = useNuxtApp();
+const $directus = nuxtApp.$directus;
 
 const loading = ref(false);
 const error = ref(null);
@@ -75,9 +77,40 @@ async function attemptLogin() {
 	error.value = null;
 
 	try {
-		// Use Directus auth which handles role-based redirect (campus → /campus, others → /portal)
-		await login(email, password);
+		// Step 1: Call server API to login and determine redirect based on role
+		const response = await $fetch('/api/campus/login', {
+			method: 'POST',
+			body: { email, password }
+		});
+
+		console.log('=== LOGIN RESPONSE ===', response);
+
+		if (!response.success || !response.access_token) {
+			throw new Error('Login failed');
+		}
+
+		// Step 2: Set tokens in the Directus client
+		await $directus.setToken(response.access_token);
+		
+		// Step 3: Cache role and auth state
+		if (process.client) {
+			localStorage.setItem('authenticated', 'true');
+			if (response.user?.role) {
+				const roleId = typeof response.user.role === 'object' 
+					? response.user.role.id 
+					: response.user.role;
+				localStorage.setItem('user_role_id', String(roleId).trim());
+			}
+		}
+
+		// Step 4: Update user state
+		user.value = response.user;
+
+		// Step 5: Navigate to the server-determined redirect path
+		console.log('Redirecting to:', response.redirectTo);
+		await navigateTo(response.redirectTo);
 	} catch (err) {
+		console.error('Login error:', err);
 		error.value = err.data?.message || err.message || 'Invalid email or password';
 	}
 

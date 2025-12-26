@@ -46,7 +46,8 @@ export default defineNuxtConfig({
 		directusServerToken: process.env.DIRECTUS_SERVER_TOKEN || '',
 		public: {
 			siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-			campusRoleId: process.env.NUXT_PUBLIC_CAMPUS_ROLE_ID || '',
+			// Fallback ID included to prevent environment variable issues
+			campusRoleId: process.env.NUXT_PUBLIC_CAMPUS_ROLE_ID || '26ea593a-0f1b-46c0-b31d-ac76abfe0143',
 		},
 	},
 

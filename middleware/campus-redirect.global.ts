@@ -22,9 +22,18 @@ export default defineNuxtRouteMiddleware((to) => {
 
     const configRoleIdStr = String(campusRoleId || '').trim();
 
+    // Debug logging to help identify mismatch
+    if (process.client) {
+        console.log('[Campus Redirect Check]');
+        console.log('User Role:', userRoleIdStr || '(empty)');
+        console.log('Config Role:', configRoleIdStr || '(empty)');
+        console.log('Path:', to.path);
+        console.log('Should Redirect?', (userRoleIdStr && userRoleIdStr === configRoleIdStr && to.path.startsWith('/portal')));
+    }
+
     // If campus user trying to access /portal, redirect to /campus
     if (configRoleIdStr && userRoleIdStr === configRoleIdStr && to.path.startsWith('/portal')) {
-        console.log('[Campus Redirect] Student detected on /portal. Sending to /campus');
+        console.log('[Campus Redirect] MATCH! Sending to /campus');
         return navigateTo('/campus');
     }
 });

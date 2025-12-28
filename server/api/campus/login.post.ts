@@ -40,8 +40,8 @@ export default defineEventHandler(async (event) => {
 			expires: authResult.expires
 		});
 
-		// Get user info to check role
-		const userResponse = await fetch(`${directusUrl}/users/me`, {
+		// Get user info to check role (Explicitly ask for role!)
+		const userResponse = await fetch(`${directusUrl}/users/me?fields=*,role`, {
 			headers: {
 				Authorization: `Bearer ${authResult.access_token}`,
 			},

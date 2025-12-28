@@ -84,8 +84,8 @@ export default defineEventHandler(async (event) => {
 
 		// Set cookie for instant middleware access (HttpOnly: false so client middleware can read it)
 		setCookie(event, 'user_role_id', userRoleIdStr, {
-			httpOnly: false, // Allow client-side JS/Middleware to read this for routing
-			secure: process.env.NODE_ENV === 'production',
+			httpOnly: false,
+			secure: false, // FORCE FALSE for Localhost debugging
 			maxAge: 60 * 60 * 24 * 7, // 1 week
 			path: '/'
 		});
@@ -105,6 +105,11 @@ export default defineEventHandler(async (event) => {
 				last_name: user.last_name,
 				role: user.role,
 			},
+			debug: {
+				userRoleId: userRoleIdStr,
+				requiredRole: configRoleIdStr,
+				isMatch: userRoleIdStr === configRoleIdStr
+			}
 		};
 	} catch (error: any) {
 		console.error('Login error:', error);

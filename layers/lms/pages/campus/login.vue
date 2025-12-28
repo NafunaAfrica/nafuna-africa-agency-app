@@ -33,10 +33,15 @@ async function handleLogin() {
             roleCookie.value = roleId;
             
             console.log('🍪 Cookie set manually:', roleId);
+
+            // Backup: Set to LocalStorage for the Reliability Patch
+            if (process.client) {
+                localStorage.setItem('user_role_id', String(roleId).trim());
+            }
         }
 
-        // 3. Force Redirect to Campus
-		await navigateTo('/campus');
+        // 3. Force Redirect to Campus (HARD RELOAD to ensure cookie is seen by middleware)
+		window.location.href = '/campus';
 	} catch (e: any) {
 		error.value = e.message || 'Login failed. Please check your credentials.';
 	} finally {

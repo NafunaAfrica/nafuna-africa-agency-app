@@ -1,8 +1,17 @@
 
 export default defineNuxtRouteMiddleware((to) => {
-    // 1. Read the Role Cookie (Instant, no API calls)
+    // 1. Read the Role Cookie (Primary) OR LocalStorage (Backup)
     const roleCookie = useCookie('user_role_id');
-    const userRole = roleCookie.value ? String(roleCookie.value).trim().toLowerCase() : null;
+    let userRole = roleCookie.value ? String(roleCookie.value).trim().toLowerCase() : null;
+
+    // Reliability Patch: If cookie is missing on client, check LocalStorage
+    if (!userRole && process.client) {
+        const storedRole = localStorage.getItem('user_role_id');
+        if (storedRole) {
+            userRole = String(storedRole).trim().toLowerCase();
+            console.log('[Role Guard] Recovered role from LocalStorage:', userRole);
+        }
+    }
 
     // 2. Get Config for Comparison
     const config = useRuntimeConfig();

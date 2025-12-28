@@ -81,6 +81,15 @@ export default defineEventHandler(async (event) => {
 		} else {
 			console.log('NO MATCH: Defaulting to /portal');
 		}
+
+		// Set cookie for instant middleware access (HttpOnly: false so client middleware can read it)
+		setCookie(event, 'user_role_id', userRoleIdStr, {
+			httpOnly: false, // Allow client-side JS/Middleware to read this for routing
+			secure: process.env.NODE_ENV === 'production',
+			maxAge: 60 * 60 * 24 * 7, // 1 week
+			path: '/'
+		});
+
 		console.log('Final redirectTo:', redirectTo);
 
 		return {

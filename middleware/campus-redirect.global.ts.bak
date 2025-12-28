@@ -1,14 +1,19 @@
 // Campus redirect middleware - redirects campus users away from /portal
-export default defineNuxtRouteMiddleware((to) => {
-    const { user } = useDirectusAuth();
+export default defineNuxtRouteMiddleware(async (to) => {
+    const { user, fetchUser } = useDirectusAuth();
     const config = useRuntimeConfig();
+
+    // If user state is not present, attempt to fetch it (resolves hydration issues)
+    if (!user.value) {
+        await fetchUser();
+    }
 
     const campusRoleId = config.public.campusRoleId;
     if (!campusRoleId) return;
 
     let userRoleIdStr = '';
 
-    // 1. Try to get role from user state
+    // 1. Try to get role from user state (now refreshed)
     if (user.value) {
         const userRoleId = typeof user.value.role === 'object' && user.value.role !== null
             ? (user.value.role as any).id

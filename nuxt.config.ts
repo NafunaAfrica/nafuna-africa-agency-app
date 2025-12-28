@@ -64,7 +64,7 @@ export default defineNuxtConfig({
 			redirect: {
 				login: '/auth/signin', // Path to redirect when login is required
 				logout: '/', // Path to redirect after logout
-				home: '/portal', // Path to redirect after successful login
+				home: '/auth/checkpoint', // Path to redirect after successful login (Neutralized)
 				resetPassword: '/auth/reset-password', // Path to redirect for password reset
 				callback: '/auth/callback', // Path to redirect after login with provider
 			},

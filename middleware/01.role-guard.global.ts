@@ -34,8 +34,9 @@ export default defineNuxtRouteMiddleware((to) => {
 
     // 5. LOGIC: Campus Protection
     // If you are in Campus Zone but NOT a student -> Get out.
-    if (isCampusZone) {
-        if (!userRole) return navigateTo('/auth/signin'); // Must be logged in
+    // EXCEPTION: Allow access to login/register pages
+    if (isCampusZone && !['/campus/login', '/campus/register'].includes(to.path)) {
+        if (!userRole) return navigateTo('/campus/login'); // Redirect to dedicated campus login instead of generic signin
         if (userRole !== campusRoleId) {
             console.warn('[Role Guard] User tried to access Campus without role. Redirecting to Portal.');
             return navigateTo('/portal');

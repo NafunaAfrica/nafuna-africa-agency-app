@@ -44,7 +44,15 @@ export default defineNuxtRouteMiddleware((to) => {
     // 5. LOGIC: Campus Protection
     // If you are in Campus Zone but NOT a student -> Get out.
     // EXCEPTION: Allow access to login/register pages
-    if (isCampusZone && !['/campus/login', '/campus/register'].includes(to.path)) {
+    if (isCampusZone && ['/campus/login', '/campus/register'].includes(to.path)) {
+        // CONVENIENCE: If already logged in as student, go to dashboard
+        if (userRole === campusRoleId) {
+            console.log('[Role Guard] User already logged in. Redirecting to Dashboard.');
+            return navigateTo('/campus');
+        }
+    }
+    // PROTECTED ZONE: Everything else in Campus
+    else if (isCampusZone) {
         if (!userRole) {
             // 🚨 SSR LOOP BREAKER
             // If we are on the server, we might rely on LocalStorage which server can't see.

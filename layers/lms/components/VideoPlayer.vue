@@ -12,7 +12,8 @@ const emit = defineEmits<{
 // Extract YouTube video ID
 const youtubeId = computed(() => {
   if (!props.videoUrl) return null
-  const match = props.videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/)
+  // Regex for YouTube ID: supports standard, short, embed, and shorts URLs
+  const match = props.videoUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
   return match ? match[1] : null
 })
 

@@ -8,7 +8,13 @@ const props = defineProps<{
 const { fileUrl } = useFiles()
 
 const thumbnailUrl = computed(() => {
-  return props.course.thumbnail ? fileUrl(props.course.thumbnail) : '/images/course-placeholder.jpg'
+  if (!props.course.thumbnail) return '/images/course-placeholder.jpg'
+  // Handle case where thumbnail is an object (unexpected expansion)
+  const fileId = typeof props.course.thumbnail === 'object' 
+    ? props.course.thumbnail.id 
+    : props.course.thumbnail
+    
+  return fileUrl(fileId)
 })
 
 const instructorNames = computed(() => {

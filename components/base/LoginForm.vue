@@ -45,6 +45,15 @@
 			/>
 		</form>
 
+		<div class="mt-6 text-center text-sm">
+			<p class="text-gray-500 dark:text-gray-400">
+				New to Nafuna Campus?
+				<NuxtLink to="/campus/register" class="text-primary-600 font-medium hover:underline">
+					Create an account
+				</NuxtLink>
+			</p>
+		</div>
+
 		<!-- @TODO Remove password once magic link authentication is added -->
 		<!-- <div class="mt-6">
 			<VText>
@@ -99,7 +108,15 @@ async function attemptLogin() {
 				const roleId = typeof response.user.role === 'object' 
 					? response.user.role.id 
 					: response.user.role;
-				localStorage.setItem('user_role_id', String(roleId).trim());
+				const roleIdStr = String(roleId).trim();
+				localStorage.setItem('user_role_id', roleIdStr);
+				
+				// FORCE COOKIE SET ON CLIENT (Redundancy for Middleware)
+				const roleCookie = useCookie('user_role_id', {
+					maxAge: 60 * 60 * 24 * 7,
+					path: '/'
+				});
+				roleCookie.value = roleIdStr;
 			}
 		}
 
@@ -107,8 +124,23 @@ async function attemptLogin() {
 		user.value = response.user;
 
 		// Step 5: Navigate to the server-determined redirect path
-		console.log('Redirecting to:', response.redirectTo);
-		await navigateTo(response.redirectTo);
+		// Step 5: Navigate to the server-determined redirect path
+		// FORCE REDIRECT based on Role to prevent cross-contamination
+		let finalRedirect = response.redirectTo;
+		
+		const roleId = response.user?.role && typeof response.user.role === 'object' 
+			? response.user.role.id 
+			: response.user.role;
+			
+		// Check against Campus Role ID (from config or hardcoded known ID if needed)
+		// We trust the server 'redirectTo' usually, but let's be explicit:
+		if (finalRedirect && finalRedirect === '/campus') {
+			// If target is just root /campus (now public), bump them to their dashboard
+             finalRedirect = '/campus/dashboard';
+		}
+
+		console.log('Redirecting to:', finalRedirect);
+		await navigateTo(finalRedirect);
 	} catch (err) {
 		console.error('Login error:', err);
 		error.value = err.data?.message || err.message || 'Invalid email or password';

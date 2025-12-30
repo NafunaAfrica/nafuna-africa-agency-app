@@ -10,6 +10,20 @@ export default defineNuxtRouteMiddleware((to) => {
         if (storedRole) {
             userRole = String(storedRole).trim().toLowerCase();
             console.log('[Role Guard] Recovered role from LocalStorage:', userRole);
+        } else {
+            // Fallback: Check Directus User State directly
+            const { user } = useDirectusAuth();
+            if (user.value && user.value.role) {
+                const roleId = typeof user.value.role === 'object'
+                    ? (user.value.role as any).id
+                    : user.value.role;
+                userRole = String(roleId).trim().toLowerCase();
+                console.log('[Role Guard] Recovered role from User State:', userRole);
+
+                // Heal the cookie
+                const roleCookieRef = useCookie('user_role_id');
+                roleCookieRef.value = userRole;
+            }
         }
     }
 
@@ -43,15 +57,12 @@ export default defineNuxtRouteMiddleware((to) => {
 
     // 5. LOGIC: Campus Protection
     // If you are in Campus Zone but NOT a student -> Get out.
-    // EXCEPTION: Allow access to login/register pages
-    if (isCampusZone && ['/campus/login', '/campus/register'].includes(to.path)) {
-        // CONVENIENCE: If already logged in as student, go to dashboard
-        if (userRole === campusRoleId) {
-            console.log('[Role Guard] User already logged in. Redirecting to Dashboard.');
-            return navigateTo('/campus');
-        }
+    // EXCEPTION: Allow access to login/register pages AND ROOT /campus (Public Directus Page)
+    if (isCampusZone && (['/campus/login', '/campus/register'].includes(to.path) || to.path === '/campus')) {
+        // Allow access to public pages
+        return;
     }
-    // PROTECTED ZONE: Everything else in Campus
+    // PROTECTED ZONE: Sub-pages in Campus (e.g. /campus/dashboard, /campus/courses)
     else if (isCampusZone) {
         if (!userRole) {
             // 🚨 SSR LOOP BREAKER
@@ -59,7 +70,7 @@ export default defineNuxtRouteMiddleware((to) => {
             // Defer the decision to the Client.
             if (process.server) return;
 
-            return navigateTo('/campus/login'); // Redirect to dedicated campus login instead of generic signin
+            return navigateTo('/auth/signin'); // Redirect to generic signin as campus login doesn't exist
         }
         if (userRole !== campusRoleId) {
             console.warn('[Role Guard] User tried to access Campus without role. Redirecting to Portal.');

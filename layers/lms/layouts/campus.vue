@@ -112,22 +112,33 @@ const isMobileMenuOpen = ref(false)
           
           <!-- User info -->
           <div class="flex-shrink-0 flex border-t border-gray-200 dark:border-gray-700 p-4">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <UAvatar 
-                  :src="user?.avatar" 
-                  :alt="user?.first_name"
-                  size="sm"
-                />
+            <div class="flex items-center w-full justify-between">
+              <div class="flex items-center min-w-0">
+                <div class="flex-shrink-0">
+                  <UAvatar 
+                    :src="user?.avatar" 
+                    :alt="user?.first_name"
+                    size="sm"
+                  />
+                </div>
+                <div class="ml-3 min-w-0">
+                  <p class="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
+                    {{ user?.first_name }} {{ user?.last_name }}
+                  </p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    Student
+                  </p>
+                </div>
               </div>
-              <div class="ml-3">
-                <p class="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  {{ user?.first_name }} {{ user?.last_name }}
-                </p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                  Student
-                </p>
-              </div>
+              <UButton
+                variant="ghost"
+                color="gray"
+                icon="i-heroicons-arrow-right-on-rectangle"
+                size="sm"
+                @click="logout()"
+                class="ml-2"
+                title="Sign out"
+              />
             </div>
           </div>
         </div>

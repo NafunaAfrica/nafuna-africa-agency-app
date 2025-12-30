@@ -486,9 +486,9 @@ For each:
 
 ### Week 1: Foundation
 - [ ] Create Directus collections (Phase 1)
-- [ ] Set up Directus users & campus role (Phase 2)
+- [x] Set up Directus users & campus role (Phase 2)
 - [ ] Create registration form UI (Phase 3)
-- [ ] Set up auth middleware for role detection (Phase 2)
+- [x] Set up auth middleware for role detection (Phase 2) - **COMPLETED** (See `DEV_NOTES.md` for fix details)
 
 ### Week 2: Dashboard & Course Display
 - [ ] Build campus dashboard with 6 layers (Phase 4)

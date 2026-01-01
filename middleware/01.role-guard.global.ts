@@ -46,7 +46,7 @@ export default defineNuxtRouteMiddleware((to) => {
     // The "Neutral Config" sends users to /auth/checkpoint. We must bounce them out.
     if (isCheckpoint) {
         if (userRole === campusRoleId) {
-            return navigateTo('/campus');
+            return navigateTo('/campus/dashboard');
         } else if (userRole) {
             return navigateTo('/portal');
         } else {
@@ -83,8 +83,8 @@ export default defineNuxtRouteMiddleware((to) => {
     if (isPortalZone) {
         if (!userRole) return navigateTo('/auth/signin');
         if (userRole === campusRoleId) {
-            console.warn('[Role Guard] Student tried to access Portal. Redirecting to Campus.');
-            return navigateTo('/campus');
+            console.warn('[Role Guard] Student tried to access Portal. Redirecting to Campus Dashboard.');
+            return navigateTo('/campus/dashboard');
         }
     }
 });

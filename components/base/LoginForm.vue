@@ -134,10 +134,10 @@ async function attemptLogin() {
 			
 		// Check against Campus Role ID (from config or hardcoded known ID if needed)
 		// We trust the server 'redirectTo' usually, but let's be explicit:
-		if (finalRedirect && finalRedirect === '/campus') {
-			// If target is just root /campus (now public), bump them to their dashboard
-             finalRedirect = '/campus/dashboard';
-		}
+		// if (finalRedirect && finalRedirect === '/campus') {
+		// 	// If target is just root /campus (now public), bump them to their dashboard
+        //      finalRedirect = '/campus/dashboard';
+		// }
 
 		console.log('Redirecting to:', finalRedirect);
 		await navigateTo(finalRedirect);

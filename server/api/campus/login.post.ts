@@ -76,8 +76,8 @@ export default defineEventHandler(async (event) => {
 		// Determine redirect based on role
 		let redirectTo = '/portal';
 		if (userRoleIdStr && configRoleIdStr && userRoleIdStr === configRoleIdStr) {
-			console.log('MATCH FOUND: Sending to /campus');
-			redirectTo = '/campus';
+			console.log('MATCH FOUND: Sending to /campus/dashboard');
+			redirectTo = '/campus/dashboard';
 		} else {
 			console.log('NO MATCH: Defaulting to /portal');
 		}

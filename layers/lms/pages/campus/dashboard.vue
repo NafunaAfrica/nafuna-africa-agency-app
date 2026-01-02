@@ -1,7 +1,6 @@
-<script setup lang="ts">
 // Student Dashboard - separate from commercial client portal
 definePageMeta({
-  layout: 'default' // Using default layout for now, will create student layout later
+  layout: 'student'
 })
 
 // SEO

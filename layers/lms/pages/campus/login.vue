@@ -41,7 +41,7 @@ async function handleLogin() {
         }
 
         // 3. Force Redirect to Campus (HARD RELOAD to ensure cookie is seen by middleware)
-		window.location.href = '/campus';
+		window.location.href = '/campus/dashboard';
 	} catch (e: any) {
 		error.value = e.message || 'Login failed. Please check your credentials.';
 	} finally {

@@ -1,6 +1,7 @@
+<script setup lang="ts">
 // Student Dashboard - separate from commercial client portal
 definePageMeta({
-  layout: 'student'
+  layout: 'campus'
 })
 
 // SEO
@@ -36,7 +37,7 @@ const enrolledCourses = ref([
     title: '2D Animation Fundamentals',
     slug: '2d-animation-fundamentals',
     instructor: 'John Doe',
-    thumbnail: '/images/course-1.jpg',
+    thumbnail: '/images/course-1.jpg', // Ensure these exist or use placeholders
     progress: 65
   },
   {
@@ -46,6 +47,25 @@ const enrolledCourses = ref([
     instructor: 'Jane Smith',
     thumbnail: '/images/course-2.jpg',
     progress: 30
+  }
+])
+
+const recommendedCourses = ref([
+  {
+    id: '3',
+    title: 'Motion Graphics Mastery',
+    slug: 'motion-graphics-mastery',
+    instructor: 'Sarah Connor',
+    thumbnail: '/images/course-3.jpg',
+    category: 'VFX'
+  },
+  {
+    id: '4',
+    title: 'Storyboarding for Film',
+    slug: 'storyboarding-film',
+    instructor: 'Mike Ross',
+    thumbnail: '/images/course-4.jpg',
+    category: 'Pre-production'
   }
 ])
 
@@ -94,232 +114,263 @@ const formatDate = (date: string) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="space-y-6">
     <!-- Dashboard Header -->
-    <div class="bg-white dark:bg-gray-800 shadow">
-      <div class="container mx-auto px-4 py-6">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-              Welcome back, {{ user?.first_name }}!
-            </h1>
-            <p class="text-gray-600 dark:text-gray-300 mt-1">
-              Continue your animation learning journey
-            </p>
-          </div>
-          <div class="flex items-center space-x-4">
-            <UBadge color="green" variant="soft">
-              {{ studentStats?.level || 'Beginner' }}
-            </UBadge>
-            <UButton color="orange" to="/campus/courses">
-              Browse Courses
-            </UButton>
-          </div>
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            Welcome back, {{ user?.first_name }}!
+          </h1>
+          <p class="text-gray-600 dark:text-gray-300 mt-1">
+            Continue your animation learning journey
+          </p>
+        </div>
+        <div class="flex items-center space-x-4">
+          <UBadge color="green" variant="soft">
+            {{ studentStats?.level || 'Beginner' }}
+          </UBadge>
+          <UButton color="orange" to="/campus/courses">
+            Browse All Courses
+          </UButton>
         </div>
       </div>
     </div>
 
-    <div class="container mx-auto px-4 py-8">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Main Content -->
-        <div class="lg:col-span-2 space-y-8">
-          <!-- Progress Overview -->
-          <UCard>
-            <template #header>
-              <h2 class="text-xl font-semibold">Learning Progress</h2>
-            </template>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div class="text-center">
-                <div class="text-3xl font-bold text-orange-500 mb-2">
-                  {{ studentStats?.coursesCompleted || 0 }}
-                </div>
-                <p class="text-gray-600 dark:text-gray-300">Courses Completed</p>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Main Content -->
+      <div class="lg:col-span-2 space-y-8">
+        <!-- Progress Overview -->
+        <UCard>
+          <template #header>
+            <h2 class="text-xl font-semibold">Learning Progress</h2>
+          </template>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+              <div class="text-3xl font-bold text-orange-500 mb-2">
+                {{ studentStats?.coursesCompleted || 0 }}
               </div>
-              <div class="text-center">
-                <div class="text-3xl font-bold text-blue-500 mb-2">
-                  {{ studentStats?.hoursLearned || 0 }}h
-                </div>
-                <p class="text-gray-600 dark:text-gray-300">Hours Learned</p>
-              </div>
-              <div class="text-center">
-                <div class="text-3xl font-bold text-green-500 mb-2">
-                  {{ studentStats?.certificatesEarned || 0 }}
-                </div>
-                <p class="text-gray-600 dark:text-gray-300">Certificates</p>
-              </div>
+              <p class="text-gray-600 dark:text-gray-300">Courses Completed</p>
             </div>
-          </UCard>
-
-          <!-- Current Courses -->
-          <UCard>
-            <template #header>
-              <div class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold">Current Courses</h2>
-                <UButton variant="ghost" to="/campus/courses">View All</UButton>
+            <div class="text-center">
+              <div class="text-3xl font-bold text-blue-500 mb-2">
+                {{ studentStats?.hoursLearned || 0 }}h
               </div>
-            </template>
-            
-            <div class="space-y-4">
-              <div 
-                v-for="course in enrolledCourses?.slice(0, 3)" 
-                :key="course.id"
-                class="flex items-center space-x-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
-                @click="navigateTo(`/campus/course/${course.slug}`)"
-              >
-                <img 
+              <p class="text-gray-600 dark:text-gray-300">Hours Learned</p>
+            </div>
+            <div class="text-center">
+              <div class="text-3xl font-bold text-green-500 mb-2">
+                {{ studentStats?.certificatesEarned || 0 }}
+              </div>
+              <p class="text-gray-600 dark:text-gray-300">Certificates</p>
+            </div>
+          </div>
+        </UCard>
+
+        <!-- Current Courses -->
+        <UCard>
+          <template #header>
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-semibold">Current Courses</h2>
+              <UButton variant="ghost" to="/campus/my-courses">View All</UButton>
+            </div>
+          </template>
+          
+          <div class="space-y-4">
+            <div 
+              v-for="course in enrolledCourses?.slice(0, 3)" 
+              :key="course.id"
+              class="flex items-center space-x-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              @click="navigateTo(`/campus/course/${course.slug}`)"
+            >
+              <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex-shrink-0 overflow-hidden">
+                 <img 
+                  v-if="course.thumbnail"
                   :src="course.thumbnail" 
                   :alt="course.title"
-                  class="w-16 h-16 object-cover rounded-lg"
+                  class="w-full h-full object-cover"
                 >
-                <div class="flex-1">
-                  <h3 class="font-semibold text-gray-900 dark:text-white">
-                    {{ course.title }}
-                  </h3>
-                  <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                    {{ course.instructor }}
-                  </p>
-                  <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div 
-                      class="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                      :style="{ width: `${course.progress}%` }"
-                    ></div>
-                  </div>
-                  <p class="text-xs text-gray-500 mt-1">
-                    {{ course.progress }}% complete
-                  </p>
-                </div>
-                <UIcon name="i-heroicons-chevron-right" class="text-gray-400" />
+                <UIcon v-else name="i-heroicons-photo" class="w-8 h-8 m-4 text-gray-400" />
               </div>
-            </div>
-          </UCard>
-
-          <!-- Recent Activity -->
-          <UCard>
-            <template #header>
-              <h2 class="text-xl font-semibold">Recent Activity</h2>
-            </template>
-            
-            <div class="space-y-3">
-              <div 
-                v-for="activity in recentActivity?.slice(0, 5)" 
-                :key="activity.id"
-                class="flex items-start space-x-3"
-              >
-                <div class="flex-shrink-0 w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
-                <div class="flex-1">
-                  <p class="text-sm text-gray-900 dark:text-white">
-                    {{ activity.description }}
-                  </p>
-                  <p class="text-xs text-gray-500">
-                    {{ formatTimeAgo(activity.created_at) }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </UCard>
-        </div>
-
-        <!-- Sidebar -->
-        <div class="space-y-6">
-          <!-- Upcoming Live Sessions -->
-          <UCard>
-            <template #header>
-              <h3 class="text-lg font-semibold">Upcoming Live Sessions</h3>
-            </template>
-            
-            <div class="space-y-4">
-              <div 
-                v-for="session in upcomingLessons?.slice(0, 3)" 
-                :key="session.id"
-                class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
-              >
-                <h4 class="font-medium text-sm text-gray-900 dark:text-white mb-1">
-                  {{ session.title }}
-                </h4>
-                <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
-                  {{ session.instructor }}
+              <div class="flex-1">
+                <h3 class="font-semibold text-gray-900 dark:text-white">
+                  {{ course.title }}
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                  {{ course.instructor }}
                 </p>
-                <div class="flex items-center justify-between text-xs">
-                  <span class="text-orange-500">
-                    {{ formatDate(session.scheduled_at) }}
-                  </span>
-                  <UButton size="xs" variant="outline">
-                    Join
-                  </UButton>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div 
+                    class="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                    :style="{ width: `${course.progress}%` }"
+                  ></div>
                 </div>
+                <p class="text-xs text-gray-500 mt-1">
+                  {{ course.progress }}% complete
+                </p>
+              </div>
+              <UIcon name="i-heroicons-chevron-right" class="text-gray-400" />
+            </div>
+          </div>
+        </UCard>
+        
+        <!-- Recommended Courses -->
+        <UCard>
+          <template #header>
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-semibold">Recommended For You</h2>
+              <UButton variant="ghost" to="/campus/courses">Browse All</UButton>
+            </div>
+          </template>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div 
+              v-for="course in recommendedCourses" 
+              :key="course.id"
+              class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+              @click="navigateTo(`/campus/course/${course.slug}`)"
+            >
+              <div class="aspect-video bg-gray-100 dark:bg-gray-800 rounded-md mb-3 overflow-hidden">
+                <img 
+                  v-if="course.thumbnail"
+                  :src="course.thumbnail"
+                  :alt="course.title"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <UBadge size="xs" color="blue" variant="subtle" class="mb-2">{{ course.category }}</UBadge>
+              <h3 class="font-medium text-gray-900 dark:text-white mb-1 line-clamp-1">{{ course.title }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ course.instructor }}</p>
+            </div>
+          </div>
+        </UCard>
+
+        <!-- Recent Activity -->
+        <UCard>
+          <template #header>
+            <h2 class="text-xl font-semibold">Recent Activity</h2>
+          </template>
+          
+          <div class="space-y-3">
+            <div 
+              v-for="activity in recentActivity?.slice(0, 5)" 
+              :key="activity.id"
+              class="flex items-start space-x-3"
+            >
+              <div class="flex-shrink-0 w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+              <div class="flex-1">
+                <p class="text-sm text-gray-900 dark:text-white">
+                  {{ activity.description }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  {{ formatTimeAgo(activity.created_at) }}
+                </p>
               </div>
             </div>
-          </UCard>
+          </div>
+        </UCard>
+      </div>
 
-          <!-- Quick Actions -->
-          <UCard>
-            <template #header>
-              <h3 class="text-lg font-semibold">Quick Actions</h3>
-            </template>
-            
-            <div class="space-y-3">
-              <UButton 
-                block 
-                variant="outline" 
-                to="/campus/assignments"
-                class="justify-start"
-              >
-                <UIcon name="i-heroicons-document-text" class="mr-2" />
-                View Assignments
-              </UButton>
-              
-              <UButton 
-                block 
-                variant="outline" 
-                to="/campus/certificates"
-                class="justify-start"
-              >
-                <UIcon name="i-heroicons-academic-cap" class="mr-2" />
-                My Certificates
-              </UButton>
-              
-              <UButton 
-                block 
-                variant="outline" 
-                to="/campus/support"
-                class="justify-start"
-              >
-                <UIcon name="i-heroicons-chat-bubble-left-right" class="mr-2" />
-                Get Help
-              </UButton>
-              
-              <UButton 
-                block 
-                variant="outline" 
-                to="/ai-chat"
-                class="justify-start"
-              >
-                <UIcon name="i-heroicons-sparkles" class="mr-2" />
-                AI Assistant
-              </UButton>
-            </div>
-          </UCard>
-
-          <!-- Achievement Badge -->
-          <UCard v-if="studentStats?.recentAchievement">
-            <template #header>
-              <h3 class="text-lg font-semibold">Latest Achievement</h3>
-            </template>
-            
-            <div class="text-center">
-              <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                <UIcon name="i-heroicons-trophy" class="text-yellow-500 text-2xl" />
-              </div>
-              <h4 class="font-medium text-gray-900 dark:text-white mb-1">
-                {{ studentStats.recentAchievement.title }}
+      <!-- Sidebar -->
+      <div class="space-y-6">
+        <!-- Upcoming Live Sessions -->
+        <UCard>
+          <template #header>
+            <h3 class="text-lg font-semibold">Upcoming Live Sessions</h3>
+          </template>
+          
+          <div class="space-y-4">
+            <div 
+              v-for="session in upcomingLessons?.slice(0, 3)" 
+              :key="session.id"
+              class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
+            >
+              <h4 class="font-medium text-sm text-gray-900 dark:text-white mb-1">
+                {{ session.title }}
               </h4>
-              <p class="text-sm text-gray-600 dark:text-gray-300">
-                {{ studentStats.recentAchievement.description }}
+              <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
+                {{ session.instructor }}
               </p>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-orange-500">
+                  {{ formatDate(session.scheduled_at) }}
+                </span>
+                <UButton size="xs" variant="outline">
+                  Join
+                </UButton>
+              </div>
             </div>
-          </UCard>
-        </div>
+          </div>
+        </UCard>
+
+        <!-- Quick Actions -->
+        <UCard>
+          <template #header>
+            <h3 class="text-lg font-semibold">Quick Actions</h3>
+          </template>
+          
+          <div class="space-y-3">
+            <UButton 
+              block 
+              variant="outline" 
+              to="/campus/assignments"
+              class="justify-start"
+            >
+              <UIcon name="i-heroicons-document-text" class="mr-2" />
+              View Assignments
+            </UButton>
+            
+            <UButton 
+              block 
+              variant="outline" 
+              to="/campus/certificates"
+              class="justify-start"
+            >
+              <UIcon name="i-heroicons-academic-cap" class="mr-2" />
+              My Certificates
+            </UButton>
+            
+            <UButton 
+              block 
+              variant="outline" 
+              to="/campus/support"
+              class="justify-start"
+            >
+              <UIcon name="i-heroicons-chat-bubble-left-right" class="mr-2" />
+              Get Help
+            </UButton>
+            
+            <UButton 
+              block 
+              variant="outline" 
+              to="/ai-chat"
+              class="justify-start"
+            >
+              <UIcon name="i-heroicons-sparkles" class="mr-2" />
+              AI Assistant
+            </UButton>
+          </div>
+        </UCard>
+
+        <!-- Achievement Badge -->
+        <UCard v-if="studentStats?.recentAchievement">
+          <template #header>
+            <h3 class="text-lg font-semibold">Latest Achievement</h3>
+          </template>
+          
+          <div class="text-center">
+            <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mx-auto mb-3">
+              <UIcon name="i-heroicons-trophy" class="text-yellow-500 text-2xl" />
+            </div>
+            <h4 class="font-medium text-gray-900 dark:text-white mb-1">
+              {{ studentStats.recentAchievement.title }}
+            </h4>
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+              {{ studentStats.recentAchievement.description }}
+            </p>
+          </div>
+        </UCard>
       </div>
     </div>
   </div>

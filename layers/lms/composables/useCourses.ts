@@ -83,6 +83,8 @@ export const useCourses = () => {
                   'id',
                   'title',
                   'slug',
+                  'video_url',
+                  'content',
                   'video_duration_minutes',
                   'lesson_type',
                   'status',

@@ -59,6 +59,15 @@ export default defineNuxtRouteMiddleware((to) => {
     // If you are in Campus Zone but NOT a student -> Get out.
     // EXCEPTION: Allow access to login/register pages AND ROOT /campus (Public Directus Page)
     if (isCampusZone && (['/campus/login', '/campus/register'].includes(to.path) || to.path === '/campus')) {
+        // Special Case: Public Landing Page /campus
+        if (to.path === '/campus') {
+            // If logged in as student, redirect to dashboard automatically
+            if (userRole === campusRoleId) {
+                return navigateTo('/campus/dashboard');
+            }
+            return; // Otherwise allow public access
+        }
+
         // Allow access to public pages
         return;
     }

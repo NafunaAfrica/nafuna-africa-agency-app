@@ -96,8 +96,19 @@ onMounted(loadData)
     <!-- Course Content -->
     <div v-else class="space-y-6">
       <!-- Course Header -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-        <div class="flex flex-wrap gap-2 mb-3">
+      <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+        <!-- Banner Image -->
+        <div v-if="course.featured_image" class="w-full h-48 md:h-64 overflow-hidden relative">
+          <img 
+            :src="`${useRuntimeConfig().public.directusUrl}/assets/${course.featured_image}`" 
+            :alt="course.title"
+            class="w-full h-full object-cover"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        </div>
+
+        <div class="p-6 relative">
+          <div class="flex flex-wrap gap-2 mb-3">
           <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
             {{ course.course_type }}
           </span>

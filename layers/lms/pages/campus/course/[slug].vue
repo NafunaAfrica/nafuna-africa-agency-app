@@ -5,6 +5,13 @@ definePageMeta({
 
 const route = useRoute()
 const slug = route.params.slug as string
+const { token } = useDirectusAuth()
+
+const getAssetUrl = (id: string) => {
+  if (!id) return ''
+  const base = `${useRuntimeConfig().public.directusUrl}/assets/${id}`
+  return token.value ? `${base}?access_token=${token.value}` : base
+}
 
 const { fetchCourseBySlug, getTotalLessons, formatDuration, getTotalDuration } = useCourses()
 const { fetchEnrollmentByCourse, enrollInCourse } = useEnrollments()
@@ -100,7 +107,7 @@ onMounted(loadData)
         <!-- Banner Image -->
         <div v-if="course.featured_image" class="w-full h-48 md:h-64 overflow-hidden relative">
           <img 
-            :src="`${useRuntimeConfig().public.directusUrl}/assets/${course.featured_image}`" 
+            :src="getAssetUrl(course.featured_image)" 
             :alt="course.title"
             class="w-full h-full object-cover"
           />

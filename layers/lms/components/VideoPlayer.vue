@@ -28,12 +28,12 @@ const isYoutube = computed(() => !!youtubeId.value)
 </script>
 
 <template>
-  <div class="relative aspect-video bg-black rounded-lg overflow-hidden">
+  <div class="relative w-full bg-black rounded-lg overflow-hidden" style="padding-bottom: 56.25%;">
     <iframe
       v-if="isYoutube"
       :src="embedUrl"
       :title="title"
-      class="w-full h-full"
+      class="absolute top-0 left-0 w-full h-full"
       frameborder="0"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       allowfullscreen
@@ -41,7 +41,7 @@ const isYoutube = computed(() => !!youtubeId.value)
     <video
       v-else-if="videoUrl"
       :src="videoUrl"
-      class="w-full h-full"
+      class="absolute top-0 left-0 w-full h-full"
       controls
       @timeupdate="(e: Event) => {
         const video = e.target as HTMLVideoElement
@@ -50,7 +50,7 @@ const isYoutube = computed(() => !!youtubeId.value)
         if (pct >= 90) emit('complete')
       }"
     />
-    <div v-else class="flex items-center justify-center h-full text-gray-400">
+    <div v-else class="absolute top-0 left-0 w-full h-full flex items-center justify-center text-gray-400">
       <span>No video available</span>
     </div>
   </div>

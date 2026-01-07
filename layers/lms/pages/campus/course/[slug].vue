@@ -132,6 +132,7 @@ onMounted(loadData)
         >
           {{ isEnrolling ? 'Enrolling...' : (course.price ? `Enroll - $${course.price}` : 'Enroll for Free') }}
         </button>
+        </div>
       </div>
 
       <!-- Enrolled View: Video + Lessons -->

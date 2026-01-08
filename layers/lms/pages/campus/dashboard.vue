@@ -89,9 +89,12 @@ const formatDate = (date: string) => {
 }
 
 // Helper to safely get thumbnail
+const { token } = useDirectusAuth()
 const getCourseThumbnail = (course: any) => {
   // Use directus asset URL or placeholder
-  return course?.thumbnail ? `${useRuntimeConfig().public.directusUrl}/assets/${course.thumbnail}` : null
+  if (!course?.thumbnail) return null
+  const base = `${useRuntimeConfig().public.directusUrl}/assets/${course.thumbnail}`
+  return token.value ? `${base}?access_token=${token.value}` : base
 }
 </script>
 
@@ -169,7 +172,11 @@ const getCourseThumbnail = (course: any) => {
               v-for="enrollment in activeCourses.slice(0, 3)" 
               :key="enrollment.id"
               class="flex items-center space-x-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
-              @click="navigateTo(`/campus/course/${(enrollment.course_id as any)?.slug}`)"
+              @click="() => {
+                if ((enrollment.course_id as any)?.slug) {
+                  navigateTo(`/campus/course/${(enrollment.course_id as any)?.slug}`)
+                }
+              }"
             >
               <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex-shrink-0 overflow-hidden">
                  <img 

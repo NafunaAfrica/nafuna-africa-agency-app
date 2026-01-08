@@ -83,9 +83,12 @@ export default defineEventHandler(async (event) => {
 		}
 
 		// Set cookie for instant middleware access (HttpOnly: false so client middleware can read it)
+		// Set cookie for instant middleware access (HttpOnly: false so client middleware can read it)
+		// PRODUCTION FIX: Ensure Secure is true for HTTPS and SameSite is Lax
 		setCookie(event, 'user_role_id', userRoleIdStr, {
 			httpOnly: false,
-			secure: false, // FORCE FALSE for Localhost debugging
+			secure: true,
+			sameSite: 'lax',
 			maxAge: 60 * 60 * 24 * 7, // 1 week
 			path: '/'
 		});

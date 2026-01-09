@@ -97,7 +97,7 @@ export const useEnrollments = () => {
   const getEnrollmentStats = (enrollments: EnrollmentWithRelations[]) => {
     const active = getActiveEnrollments(enrollments)
     const completed = getCompletedEnrollments(enrollments)
-    
+
     const totalProgress = active.reduce((sum, e) => sum + (e.progress_percentage || 0), 0)
     const avgProgress = active.length > 0 ? Math.round(totalProgress / active.length) : 0
 

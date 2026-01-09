@@ -68,9 +68,9 @@
 </template>
 
 <script setup>
-const { user } = useDirectusAuth();
-const nuxtApp = useNuxtApp();
-const $directus = nuxtApp.$directus;
+const { login, user } = useDirectusAuth();
+const router = useRouter();
+const config = useRuntimeConfig();
 
 const loading = ref(false);
 const error = ref(null);
@@ -86,66 +86,39 @@ async function attemptLogin() {
 	error.value = null;
 
 	try {
-		// Step 1: Call server API to login and determine redirect based on role
-		const response = await $fetch('/api/campus/login', {
-			method: 'POST',
-			body: { email, password }
-		});
+		// Step 1: Standard Client-Side Login (Matches Client Portal)
+		// This handles cookies securely and automatically based on the Directus SDK defaults
+		await login(email, password);
 
-		console.log('=== LOGIN RESPONSE ===', response);
+		// Step 2: Determine Redirect based on Role
+		// We trust the client-side User object which is now populated
+		const userRole = user.value?.role;
+		
+		// Extract Role ID safely
+		const roleId = typeof userRole === 'object' && userRole !== null 
+			? userRole.id 
+			: userRole;
+		
+		const roleIdStr = String(roleId || '').trim().toLowerCase();
+		const campusRoleId = String(config.public.campusRoleId || '').trim().toLowerCase();
 
-		if (!response.success || !response.access_token) {
-			throw new Error('Login failed');
+		console.log('Login Success. Role:', roleIdStr);
+
+		// Step 3: Client-Side Redirect Logic
+		if (roleIdStr && campusRoleId && roleIdStr === campusRoleId) {
+			console.log('Student detected, redirecting to Dashboard...');
+			// Force reload to ensure all middleware/stores are fresh
+			window.location.href = '/campus/dashboard';
+		} else {
+			console.log('Client/Staff detected, redirecting to Portal...');
+			window.location.href = '/portal';
 		}
 
-		// Step 2: Set tokens in the Directus client
-		await $directus.setToken(response.access_token);
-		
-		// Step 3: Cache role and auth state
-		if (process.client) {
-			localStorage.setItem('authenticated', 'true');
-			if (response.user?.role) {
-				const roleId = typeof response.user.role === 'object' 
-					? response.user.role.id 
-					: response.user.role;
-				const roleIdStr = String(roleId).trim();
-				localStorage.setItem('user_role_id', roleIdStr);
-				
-				// FORCE COOKIE SET ON CLIENT (Redundancy for Middleware)
-				const roleCookie = useCookie('user_role_id', {
-					maxAge: 60 * 60 * 24 * 7,
-					path: '/'
-				});
-				roleCookie.value = roleIdStr;
-			}
-		}
-
-		// Step 4: Update user state
-		user.value = response.user;
-
-		// Step 5: Navigate to the server-determined redirect path
-		// Step 5: Navigate to the server-determined redirect path
-		// FORCE REDIRECT based on Role to prevent cross-contamination
-		let finalRedirect = response.redirectTo;
-		
-		const roleId = response.user?.role && typeof response.user.role === 'object' 
-			? response.user.role.id 
-			: response.user.role;
-			
-		// Check against Campus Role ID (from config or hardcoded known ID if needed)
-		// We trust the server 'redirectTo' usually, but let's be explicit:
-		// if (finalRedirect && finalRedirect === '/campus') {
-		// 	// If target is just root /campus (now public), bump them to their dashboard
-        //      finalRedirect = '/campus/dashboard';
-		// }
-
-		console.log('Redirecting to:', finalRedirect);
-		await navigateTo(finalRedirect);
 	} catch (err) {
 		console.error('Login error:', err);
-		error.value = err.data?.message || err.message || 'Invalid email or password';
+		error.value = err.message || 'Invalid email or password';
+	} finally {
+		loading.value = false;
 	}
-
-	loading.value = false;
 }
 </script>

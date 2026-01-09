@@ -99,267 +99,188 @@ const getCourseThumbnail = (course: any) => {
 </script>
 
 <template>
-  <div class="space-y-6">
-    <!-- Dashboard Header -->
-    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-            Welcome back, {{ displayUser.first_name }}!
-          </h1>
-          <p class="text-gray-600 dark:text-gray-300 mt-1">
-            Continue your animation learning journey
-          </p>
-        </div>
-        <div class="flex items-center space-x-4">
-          <UBadge color="green" variant="soft">
-            Student
-          </UBadge>
-          <UButton color="orange" to="/campus/courses">
-            Browse All Courses
-          </UButton>
-        </div>
+  <PageContainer>
+    <!-- Welcome Header (Matching Client Portal) -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+      <div>
+        <TypographyTitle class="normal-case mb-2">
+          Welcome back, {{ displayUser.first_name }}
+        </TypographyTitle>
+        <TypographyHeadline 
+          :content="`Ready to continue your <em>${activeCourses.length > 0 ? 'animation journey' : 'learning adventure'}</em>?`" 
+          size="lg" 
+        />
+      </div>
+      <div class="flex items-center space-x-3">
+        <UButton color="black" variant="solid" size="lg" to="/campus/courses">
+          Browse Courses
+        </UButton>
       </div>
     </div>
+
+    <VDivider class="my-8" />
 
     <!-- Loading State -->
     <div v-if="isLoading" class="flex justify-center py-12">
-        <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 animate-spin text-orange-500" />
+        <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 animate-spin text-primary" />
     </div>
 
     <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Main Content -->
-      <div class="lg:col-span-2 space-y-8">
-        <!-- Progress Overview -->
-        <UCard>
-          <template #header>
-            <h2 class="text-xl font-semibold">Learning Progress</h2>
-          </template>
-          
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="text-center">
-              <div class="text-3xl font-bold text-orange-500 mb-2">
-                {{ stats?.completed || 0 }}
-              </div>
-              <p class="text-gray-600 dark:text-gray-300">Courses Completed</p>
-            </div>
-            <div class="text-center">
-              <div class="text-3xl font-bold text-blue-500 mb-2">
-                {{ stats?.inProgress || 0 }}
-              </div>
-              <p class="text-gray-600 dark:text-gray-300">In Progress</p>
-            </div>
-            <div class="text-center">
-              <div class="text-3xl font-bold text-green-500 mb-2">
-                {{ stats?.certificatesEarned || 0 }}
-              </div>
-              <p class="text-gray-600 dark:text-gray-300">Certificates</p>
-            </div>
+      <!-- Main Content (Left Column) -->
+      <div class="lg:col-span-2 space-y-10">
+        
+        <!-- Current Courses Section -->
+        <section>
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-display font-semibold dark:text-white">Active Courses</h3>
+            <UButton variant="ghost" to="/campus/my-courses" color="gray">View All</UButton>
           </div>
-        </UCard>
-
-        <!-- Current Courses -->
-        <UCard>
-          <template #header>
-            <div class="flex items-center justify-between">
-              <h2 class="text-xl font-semibold">Current Courses</h2>
-              <UButton variant="ghost" to="/campus/my-courses">View All</UButton>
-            </div>
-          </template>
           
-          <div v-if="activeCourses && activeCourses.length > 0" class="space-y-4">
+          <div v-if="activeCourses && activeCourses.length > 0" class="grid grid-cols-1 gap-6">
             <div 
               v-for="enrollment in activeCourses.slice(0, 3)" 
               :key="enrollment.id"
-              class="flex items-center space-x-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              class="group relative bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 transition-all duration-300 hover:shadow-lg hover:border-primary/20 cursor-pointer"
               @click="() => {
-                if ((enrollment.course_id as any)?.slug) {
-                  navigateTo(`/campus/course/${(enrollment.course_id as any)?.slug}`)
+                const slug = (enrollment.course_id as any)?.slug
+                if (slug) {
+                  navigateTo(`/campus/course/${slug}`)
+                } else {
+                  console.error('Missing slug for course:', enrollment.course_id)
                 }
               }"
             >
-              <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex-shrink-0 overflow-hidden">
-                 <img 
-                  v-if="getCourseThumbnail((enrollment.course_id as any))"
-                  :src="getCourseThumbnail((enrollment.course_id as any))" 
-                  :alt="(enrollment.course_id as any)?.title"
-                  class="w-full h-full object-cover"
-                >
-                <UIcon v-else name="i-heroicons-photo" class="w-8 h-8 m-4 text-gray-400" />
-              </div>
-              <div class="flex-1">
-                <h3 class="font-semibold text-gray-900 dark:text-white">
-                  {{ (enrollment.course_id as any)?.title }}
-                </h3>
-                <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                  {{ (enrollment.course_id as any)?.instructors?.[0]?.instructor_id?.name || 'Nafuna Instructor' }}
-                </p>
-                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
-                    class="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                    :style="{ width: `${enrollment.progress_percentage || 0}%` }"
-                  ></div>
+              <div class="flex gap-5">
+                <!-- Thumbnail -->
+                <div class="w-24 h-24 md:w-32 md:h-32 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900">
+                   <img 
+                    v-if="getCourseThumbnail((enrollment.course_id as any))"
+                    :src="getCourseThumbnail((enrollment.course_id as any))" 
+                    :alt="(enrollment.course_id as any)?.title"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  >
+                  <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
+                    <UIcon name="i-heroicons-photo" class="w-8 h-8" />
+                  </div>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">
-                  {{ enrollment.progress_percentage || 0 }}% complete
-                </p>
+
+                <!-- Info -->
+                <div class="flex-1 min-w-0 py-1">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="text-lg font-bold font-display text-gray-900 dark:text-white mb-1 group-hover:text-primary transition-colors">
+                        {{ (enrollment.course_id as any)?.title }}
+                      </h4>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">
+                        {{ (enrollment.course_id as any)?.instructors?.[0]?.instructor_id?.name || 'Nafuna Instructor' }}
+                      </p>
+                    </div>
+                     <!-- Progress Badge -->
+                    <div class="hidden md:block"> 
+                       <UBadge :color="enrollment.progress_percentage === 100 ? 'green' : 'orange'" variant="subtle" size="sm">
+                         {{ enrollment.progress_percentage || 0 }}% Complete
+                       </UBadge>
+                    </div>
+                  </div>
+
+                  <!-- Progress Bar Context -->
+                  <div class="mt-4 md:mt-auto">
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-1.5 md:hidden">
+                        <span>Progress</span>
+                        <span>{{ enrollment.progress_percentage || 0 }}%</span>
+                    </div>
+                    <UProgress 
+                      :value="enrollment.progress_percentage || 0" 
+                      color="orange" 
+                      size="sm" 
+                      :ui="{ wrapper: 'bg-gray-100 dark:bg-gray-700' }"
+                    />
+                  </div>
+                </div>
               </div>
-              <UIcon name="i-heroicons-chevron-right" class="text-gray-400" />
             </div>
           </div>
-          <div v-else class="text-center py-8 text-gray-500">
-            <p>You haven't enrolled in any courses yet.</p>
-            <UButton to="/campus/courses" variant="link" color="orange">Browse Courses</UButton>
-          </div>
-        </UCard>
-        
-        <!-- Recommended Courses -->
-        <UCard v-if="recommendedCourses.length > 0">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <h2 class="text-xl font-semibold">Recommended For You</h2>
-              <UButton variant="ghost" to="/campus/courses">Browse All</UButton>
-            </div>
-          </template>
           
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div v-else class="text-center py-12 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
+            <p class="text-gray-500 mb-4">You haven't started any courses yet.</p>
+            <UButton to="/campus/courses" color="primary">Explore Catalogue</UButton>
+          </div>
+        </section>
+
+        <!-- Stats Overview (Grid) -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+           <div class="p-4 bg-orange-50 dark:bg-orange-500/10 rounded-xl border border-orange-100 dark:border-orange-500/20">
+              <div class="text-2xl font-bold font-display text-orange-600 dark:text-orange-400">{{ stats?.completed || 0 }}</div>
+              <div class="text-xs font-medium text-orange-600/70 dark:text-orange-400/70 uppercase tracking-wider mt-1">Completed</div>
+           </div>
+           <div class="p-4 bg-blue-50 dark:bg-blue-500/10 rounded-xl border border-blue-100 dark:border-blue-500/20">
+              <div class="text-2xl font-bold font-display text-blue-600 dark:text-blue-400">{{ stats?.inProgress || 0 }}</div>
+              <div class="text-xs font-medium text-blue-600/70 dark:text-blue-400/70 uppercase tracking-wider mt-1">In Progress</div>
+           </div>
+           <div class="p-4 bg-green-50 dark:bg-green-500/10 rounded-xl border border-green-100 dark:border-green-500/20">
+              <div class="text-2xl font-bold font-display text-green-600 dark:text-green-400">{{ stats?.certificatesEarned || 0 }}</div>
+              <div class="text-xs font-medium text-green-600/70 dark:text-green-400/70 uppercase tracking-wider mt-1">Certificates</div>
+           </div>
+             <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+              <div class="text-2xl font-bold font-display text-gray-600 dark:text-gray-400">{{ stats?.averageProgress || 0 }}%</div>
+              <div class="text-xs font-medium text-gray-500 uppercase tracking-wider mt-1">Avg. Score</div>
+           </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column (Sidebar Widgets) -->
+      <div class="space-y-8">
+        
+        <!-- Recommended Widget -->
+        <div v-if="recommendedCourses.length > 0" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+             <h3 class="font-display font-semibold text-gray-900 dark:text-white">Recommended</h3>
+          </div>
+          <div class="divide-y divide-gray-100 dark:divide-gray-700">
             <div 
               v-for="course in recommendedCourses" 
               :key="course.id"
-              class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+              class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group"
               @click="navigateTo(`/campus/course/${course.slug}`)"
             >
-              <div class="aspect-video bg-gray-100 dark:bg-gray-800 rounded-md mb-3 overflow-hidden">
-                <img 
-                  v-if="getCourseThumbnail(course)"
-                  :src="getCourseThumbnail(course)"
-                  :alt="course.title"
-                  class="w-full h-full object-cover"
-                />
-                 <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
-                    <UIcon name="i-heroicons-photo" class="w-8 h-8" />
+              <div class="flex gap-3">
+                 <div class="w-16 h-10 bg-gray-200 rounded overflow-hidden">
+                    <img 
+                      v-if="getCourseThumbnail(course)"
+                      :src="getCourseThumbnail(course)"
+                      class="w-full h-full object-cover"
+                    />
+                 </div>
+                 <div>
+                    <h4 class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-primary">{{ course.title }}</h4>
+                    <p class="text-xs text-gray-500">{{ course.course_type }}</p>
                  </div>
               </div>
-              <UBadge size="xs" color="blue" variant="subtle" class="mb-2">{{ course.course_type }}</UBadge>
-              <h3 class="font-medium text-gray-900 dark:text-white mb-1 line-clamp-1">{{ course.title }}</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">{{ (course as any).instructors?.[0]?.instructor_id?.name || 'Nafuna Instructor' }}</p>
             </div>
           </div>
-        </UCard>
+        </div>
 
-        <!-- Recent Activity -->
-        <UCard>
-          <template #header>
-            <h2 class="text-xl font-semibold">Recent Activity</h2>
-          </template>
-          
-          <div v-if="recentActivity.length > 0" class="space-y-3">
-            <div 
-              v-for="activity in recentActivity" 
-              :key="activity.id"
-              class="flex items-start space-x-3"
-            >
-              <div class="flex-shrink-0 w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
-              <div class="flex-1">
-                <p class="text-sm text-gray-900 dark:text-white">
-                  {{ activity.description }}
-                </p>
-                <p class="text-xs text-gray-500">
-                  {{ formatTimeAgo(activity.created_at) }}
-                </p>
-              </div>
-            </div>
+        <!-- Quick Actions Widget -->
+        <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-5 text-white shadow-lg">
+          <h3 class="font-display font-semibold mb-4 text-lg">Quick Actions</h3>
+          <div class="space-y-2">
+            <NuxtLink to="/campus/assignments" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition-colors text-sm">
+               <UIcon name="i-heroicons-document-text" class="mr-3 text-orange-400" />
+               View Assignments
+            </NuxtLink>
+            <NuxtLink to="/campus/certificates" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition-colors text-sm">
+               <UIcon name="i-heroicons-academic-cap" class="mr-3 text-blue-400" />
+               My Certificates
+            </NuxtLink>
+            <NuxtLink to="/ai-chat" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition-colors text-sm">
+               <UIcon name="i-heroicons-sparkles" class="mr-3 text-purple-400" />
+               AI Assistant
+            </NuxtLink>
           </div>
-          <div v-else class="text-sm text-gray-500">
-            No recent activity.
-          </div>
-        </UCard>
-      </div>
+        </div>
 
-      <!-- Sidebar -->
-      <div class="space-y-6">
-        <!-- Upcoming Live Sessions -->
-        <UCard>
-          <template #header>
-            <h3 class="text-lg font-semibold">Upcoming Live Sessions</h3>
-          </template>
-          
-          <div v-if="upcomingLessons.length > 0" class="space-y-4">
-            <div 
-              v-for="session in upcomingLessons.slice(0, 3)" 
-              :key="session.id"
-              class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
-            >
-              <h4 class="font-medium text-sm text-gray-900 dark:text-white mb-1">
-                {{ session.title }}
-              </h4>
-              <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
-                {{ session.instructor }}
-              </p>
-              <div class="flex items-center justify-between text-xs">
-                <span class="text-orange-500">
-                  {{ formatDate(session.scheduled_at) }}
-                </span>
-                <UButton size="xs" variant="outline">
-                  Join
-                </UButton>
-              </div>
-            </div>
-          </div>
-          <div v-else class="text-sm text-gray-500">
-            No upcoming sessions scheduled.
-          </div>
-        </UCard>
-
-        <!-- Quick Actions -->
-        <UCard>
-          <template #header>
-            <h3 class="text-lg font-semibold">Quick Actions</h3>
-          </template>
-          
-          <div class="space-y-3">
-            <UButton 
-              block 
-              variant="outline" 
-              to="/campus/assignments"
-              class="justify-start"
-            >
-              <UIcon name="i-heroicons-document-text" class="mr-2" />
-              View Assignments
-            </UButton>
-            
-            <UButton 
-              block 
-              variant="outline" 
-              to="/campus/certificates"
-              class="justify-start"
-            >
-              <UIcon name="i-heroicons-academic-cap" class="mr-2" />
-              My Certificates
-            </UButton>
-            
-            <UButton 
-              block 
-              variant="outline" 
-              to="/campus/support"
-              class="justify-start"
-            >
-              <UIcon name="i-heroicons-chat-bubble-left-right" class="mr-2" />
-              Get Help
-            </UButton>
-            
-            <UButton 
-              block 
-              variant="outline" 
-              to="/ai-chat"
-              class="justify-start"
-            >
-              <UIcon name="i-heroicons-sparkles" class="mr-2" />
-              AI Assistant
-            </UButton>
-          </div>
-        </UCard>
       </div>
     </div>
-  </div>
+  </PageContainer>
 </template>

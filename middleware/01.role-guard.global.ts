@@ -6,27 +6,26 @@ export default defineNuxtRouteMiddleware((to) => {
 
     // Reliability Patch: If cookie is missing on client, check LocalStorage
     if (!userRole && process.client) {
-        // Validate against Token existence
-        const { token } = useDirectusAuth();
+        // Validate against User existence (since Token isn't exposed directly)
+        const { user } = useDirectusAuth();
 
-        if (!token.value) {
-            // No Token = No Session. Any stored role is a "Ghost".
+        if (!user.value) {
+            // No User = No Session. Any stored role is a "Ghost".
             // Do NOT recover it. Clear it to prevent loops.
             const stored = localStorage.getItem('user_role_id');
             if (stored) {
-                console.warn('[Role Guard] Found stale role in LocalStorage but no Auth Token. Clearing.');
+                console.warn('[Role Guard] Found stale role in LocalStorage but User is null. Clearing.');
                 localStorage.removeItem('user_role_id');
             }
             userRole = null;
         } else {
-            // Token exists, safe to check LocalStorage for role hint
+            // User exists, safe to check LocalStorage for role hint
             const storedRole = localStorage.getItem('user_role_id');
             if (storedRole) {
                 userRole = String(storedRole).trim().toLowerCase();
-                console.log('[Role Guard] Recovered role from LocalStorage (Token Valid):', userRole);
+                console.log('[Role Guard] Recovered role from LocalStorage (User Valid):', userRole);
             } else {
                 // Fallback: Check Directus User State directly
-                const { user } = useDirectusAuth();
                 if (user.value && user.value.role) {
                     const roleId = typeof user.value.role === 'object'
                         ? (user.value.role as any).id

@@ -6,23 +6,38 @@ export default defineNuxtRouteMiddleware((to) => {
 
     // Reliability Patch: If cookie is missing on client, check LocalStorage
     if (!userRole && process.client) {
-        const storedRole = localStorage.getItem('user_role_id');
-        if (storedRole) {
-            userRole = String(storedRole).trim().toLowerCase();
-            console.log('[Role Guard] Recovered role from LocalStorage:', userRole);
-        } else {
-            // Fallback: Check Directus User State directly
-            const { user } = useDirectusAuth();
-            if (user.value && user.value.role) {
-                const roleId = typeof user.value.role === 'object'
-                    ? (user.value.role as any).id
-                    : user.value.role;
-                userRole = String(roleId).trim().toLowerCase();
-                console.log('[Role Guard] Recovered role from User State:', userRole);
+        // Validate against Token existence
+        const { token } = useDirectusAuth();
 
-                // Heal the cookie
-                const roleCookieRef = useCookie('user_role_id');
-                roleCookieRef.value = userRole;
+        if (!token.value) {
+            // No Token = No Session. Any stored role is a "Ghost".
+            // Do NOT recover it. Clear it to prevent loops.
+            const stored = localStorage.getItem('user_role_id');
+            if (stored) {
+                console.warn('[Role Guard] Found stale role in LocalStorage but no Auth Token. Clearing.');
+                localStorage.removeItem('user_role_id');
+            }
+            userRole = null;
+        } else {
+            // Token exists, safe to check LocalStorage for role hint
+            const storedRole = localStorage.getItem('user_role_id');
+            if (storedRole) {
+                userRole = String(storedRole).trim().toLowerCase();
+                console.log('[Role Guard] Recovered role from LocalStorage (Token Valid):', userRole);
+            } else {
+                // Fallback: Check Directus User State directly
+                const { user } = useDirectusAuth();
+                if (user.value && user.value.role) {
+                    const roleId = typeof user.value.role === 'object'
+                        ? (user.value.role as any).id
+                        : user.value.role;
+                    userRole = String(roleId).trim().toLowerCase();
+                    console.log('[Role Guard] Recovered role from User State:', userRole);
+
+                    // Heal the cookie
+                    const roleCookieRef = useCookie('user_role_id');
+                    roleCookieRef.value = userRole;
+                }
             }
         }
     }

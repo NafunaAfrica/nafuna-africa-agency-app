@@ -6,15 +6,22 @@ export default defineNuxtRouteMiddleware((to) => {
 
     // Reliability Patch: If cookie is missing on client, check LocalStorage
     if (!userRole && process.client) {
-        // Validate against User existence (since Token isn't exposed directly)
-        const { user } = useDirectusAuth();
+        // Validate against User existence (defensively)
+        let authUser = null;
+        try {
+            const auth = useDirectusAuth();
+            authUser = auth?.user;
+        } catch (e) {
+            console.warn('[Role Guard] Auth composable not ready:', e);
+        }
 
-        if (!user.value) {
+        // If we can't get the user ref, or the value is null, assume not logged in.
+        if (!authUser?.value) {
             // No User = No Session. Any stored role is a "Ghost".
             // Do NOT recover it. Clear it to prevent loops.
             const stored = localStorage.getItem('user_role_id');
             if (stored) {
-                console.warn('[Role Guard] Found stale role in LocalStorage but User is null. Clearing.');
+                console.warn('[Role Guard] Found stale role in LocalStorage but User is null/unreachable. Clearing.');
                 localStorage.removeItem('user_role_id');
             }
             userRole = null;
@@ -25,11 +32,11 @@ export default defineNuxtRouteMiddleware((to) => {
                 userRole = String(storedRole).trim().toLowerCase();
                 console.log('[Role Guard] Recovered role from LocalStorage (User Valid):', userRole);
             } else {
-                // Fallback: Check Directus User State directly
-                if (user.value && user.value.role) {
-                    const roleId = typeof user.value.role === 'object'
-                        ? (user.value.role as any).id
-                        : user.value.role;
+                // Fallback: Check user state directly (re-using the ref we verified)
+                if (authUser.value.role) {
+                    const roleId = typeof authUser.value.role === 'object'
+                        ? (authUser.value.role as any).id
+                        : authUser.value.role;
                     userRole = String(roleId).trim().toLowerCase();
                     console.log('[Role Guard] Recovered role from User State:', userRole);
 

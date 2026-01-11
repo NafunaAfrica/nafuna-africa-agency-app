@@ -55,7 +55,17 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 
 			// Cache role in localStorage for middleware
 			if (process.client && userRoleId) {
-				localStorage.setItem('user_role_id', userRoleId.toString().trim());
+				const roleIdStr = userRoleId.toString().trim();
+				localStorage.setItem('user_role_id', roleIdStr);
+
+				// CRITICAL: Set Cookie immediately for Middleware/SSR support
+				const roleCookie = useCookie('user_role_id', {
+					maxAge: 60 * 60 * 24 * 7, // 1 week
+					sameSite: 'lax',
+					secure: true,
+					path: '/'
+				});
+				roleCookie.value = roleIdStr;
 			}
 
 			// Determine redirect based on role

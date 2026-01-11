@@ -1,108 +1,68 @@
 
 export default defineNuxtRouteMiddleware((to) => {
-    // 1. Read the Role Cookie (Primary) OR LocalStorage (Backup)
-    const roleCookie = useCookie('user_role_id');
-    let userRole = roleCookie.value ? String(roleCookie.value).trim().toLowerCase() : null;
+    // 1. Get User State (Don't try to manage it or recover it)
+    const { user } = useDirectusAuth();
 
-    // Reliability Patch: If cookie is missing on client, check LocalStorage
-    if (!userRole && process.client) {
-        // Validate against User existence (defensively)
-        let authUser = null;
-        try {
-            const auth = useDirectusAuth();
-            authUser = auth?.user;
-        } catch (e) {
-            console.warn('[Role Guard] Auth composable not ready:', e);
-        }
+    // 2. If NO user, we do NOTHING. 
+    // The native 'auth' middleware (defined in dashboard pages) will handle the "Not Logged In" case.
+    if (!user.value) return;
 
-        // If we can't get the user ref, or the value is null, assume not logged in.
-        if (!authUser?.value) {
-            // No User = No Session. Any stored role is a "Ghost".
-            // Do NOT recover it. Clear it to prevent loops.
-            const stored = localStorage.getItem('user_role_id');
-            if (stored) {
-                console.warn('[Role Guard] Found stale role in LocalStorage but User is null/unreachable. Clearing.');
-                localStorage.removeItem('user_role_id');
-            }
-            userRole = null;
-        } else {
-            // User exists, safe to check LocalStorage for role hint
-            const storedRole = localStorage.getItem('user_role_id');
-            if (storedRole) {
-                userRole = String(storedRole).trim().toLowerCase();
-                console.log('[Role Guard] Recovered role from LocalStorage (User Valid):', userRole);
-            } else {
-                // Fallback: Check user state directly (re-using the ref we verified)
-                if (authUser.value.role) {
-                    const roleId = typeof authUser.value.role === 'object'
-                        ? (authUser.value.role as any).id
-                        : authUser.value.role;
-                    userRole = String(roleId).trim().toLowerCase();
-                    console.log('[Role Guard] Recovered role from User State:', userRole);
+    // 3. If User EXISTS, we enforce Role Zones
+    // At this point, we are confident we have a session.
 
-                    // Heal the cookie
-                    const roleCookieRef = useCookie('user_role_id');
-                    roleCookieRef.value = userRole;
-                }
-            }
-        }
-    }
+    // Get Role ID safely (Handle object vs string)
+    // The previous code had crashes here, so we use defensive checks.
+    const userRole = user.value.role && typeof user.value.role === 'object'
+        ? (user.value.role as any).id
+        : user.value.role;
 
-    // 2. Get Config for Comparison
+    const roleId = String(userRole || '').trim().toLowerCase();
+
+    // Get Config
     const config = useRuntimeConfig();
     const campusRoleId = String(config.public.campusRoleId || '').trim().toLowerCase();
 
-    // 3. Define Zones
-    // @TODO: Add 'game' here in future
+    // Define Zones
     const isCampusZone = to.path.startsWith('/campus');
     const isPortalZone = to.path.startsWith('/portal');
     const isCheckpoint = to.path === '/auth/checkpoint';
 
-    // Log for debugging (remove in production if noisy)
+    // Log for debugging
     if (process.client) {
-        console.log('[Role Guard] Path:', to.path, '| Role:', userRole);
+        // console.log('[Role Guard] Path:', to.path, '| Role:', roleId);
     }
 
     // 4. LOGIC: Checkpoint Rescue
     // The "Neutral Config" sends users to /auth/checkpoint. We must bounce them out.
     if (isCheckpoint) {
-        if (userRole === campusRoleId) {
+        if (roleId === campusRoleId) {
             return navigateTo('/campus/dashboard');
-        } else if (userRole) {
+        } else if (roleId) {
             return navigateTo('/portal');
-        } else {
-            // Not logged in? Back to login.
-            return navigateTo('/auth/signin');
         }
+        // If not logged in, we do nothing (let the page load or auth middleware handle it)
+        return;
     }
 
     // 5. LOGIC: Campus Protection
     // If you are in Campus Zone but NOT a student -> Get out.
     // EXCEPTION: Allow access to login/register pages AND ROOT /campus (Public Directus Page)
-    if (isCampusZone && (['/campus/login', '/campus/register'].includes(to.path) || to.path === '/campus')) {
+    if (isCampusZone) {
         // Special Case: Public Landing Page /campus
         if (to.path === '/campus') {
-            // If logged in as student, redirect to dashboard automatically
-            if (userRole === campusRoleId) {
+            // Logged-in Students should go to Dashboard (Convenience)
+            if (roleId === campusRoleId) {
                 return navigateTo('/campus/dashboard');
             }
-            return; // Otherwise allow public access
+            return; // Others (or public) can see the landing page
         }
 
-        // Allow access to public pages
-        return;
-    }
-    // PROTECTED ZONE: Sub-pages in Campus (e.g. /campus/dashboard, /campus/courses)
-    else if (isCampusZone) {
-        if (!userRole) {
-            // 🚨 SSR LOOP BREAKER
-            // If we are on the server, we might rely on LocalStorage which server can't see.
-            // Defer the decision to the Client.
-            if (process.server) return;
+        // Protected Campus Pages (e.g. /campus/dashboard)
+        // If I am NOT a student (e.g. I am a Client), I shouldn't be here.
+        if (roleId && roleId !== campusRoleId) {
+            // Allow login/register pages explicitly
+            if (['/campus/login', '/campus/register'].includes(to.path)) return;
 
-            return navigateTo('/auth/signin'); // Redirect to generic signin as campus login doesn't exist
-        }
-        if (userRole !== campusRoleId) {
             console.warn('[Role Guard] User tried to access Campus without role. Redirecting to Portal.');
             return navigateTo('/portal');
         }
@@ -111,8 +71,8 @@ export default defineNuxtRouteMiddleware((to) => {
     // 6. LOGIC: Portal Protection (Reverse)
     // If you are in Portal Zone but ARE a student -> Get out.
     if (isPortalZone) {
-        if (!userRole) return navigateTo('/auth/signin');
-        if (userRole === campusRoleId) {
+        // If I am a Student, I shouldn't be in the Client Portal
+        if (roleId === campusRoleId) {
             console.warn('[Role Guard] Student tried to access Portal. Redirecting to Campus Dashboard.');
             return navigateTo('/campus/dashboard');
         }

@@ -28,8 +28,13 @@ export default defineNuxtRouteMiddleware((to) => {
     const isCheckpoint = to.path === '/auth/checkpoint';
 
     // Log for debugging
+    // Log for debugging
     if (process.client) {
-        // console.log('[Role Guard] Path:', to.path, '| Role:', roleId);
+        console.log('[Role Guard] Path:', to.path);
+        console.log('[Role Guard] User Role Raw:', user.value?.role);
+        console.log('[Role Guard] Extracted Role ID:', roleId);
+        console.log('[Role Guard] Campus Config ID:', campusRoleId);
+        console.log('[Role Guard] Match:', roleId === campusRoleId);
     }
 
     // 4. LOGIC: Checkpoint Rescue

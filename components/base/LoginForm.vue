@@ -105,13 +105,16 @@ async function attemptLogin() {
 		console.log('Login Success. Role:', roleIdStr);
 
 		// Step 3: Client-Side Redirect Logic
+
 		if (roleIdStr && campusRoleId && roleIdStr === campusRoleId) {
 			console.log('Student detected, redirecting to Dashboard...');
-			// Force reload to ensure all middleware/stores are fresh
-			window.location.href = '/campus/dashboard';
+			// use navigateTo to preserve state (SPA navigation)
+			await navigateTo('/campus/dashboard');
 		} else {
 			console.log('Client/Staff detected, redirecting to Portal...');
-			window.location.href = '/portal';
+			// Portal might be a separate app or need refresh, but try SPA first.
+			// If portal is in the same Nuxt app (layers), SPA is better.
+			await navigateTo('/portal');
 		}
 
 	} catch (err) {

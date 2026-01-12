@@ -86,36 +86,14 @@ async function attemptLogin() {
 	error.value = null;
 
 	try {
+
 		// Step 1: Standard Client-Side Login (Matches Client Portal)
 		// This handles cookies securely and automatically based on the Directus SDK defaults
 		await login(email, password);
 
-		// Step 2: Determine Redirect based on Role
-		// We trust the client-side User object which is now populated
-		const userRole = user.value?.role;
-		
-		// Extract Role ID safely
-		const roleId = typeof userRole === 'object' && userRole !== null 
-			? userRole.id 
-			: userRole;
-		
-		const roleIdStr = String(roleId || '').trim().toLowerCase();
-		const campusRoleId = String(config.public.campusRoleId || '').trim().toLowerCase();
+        // The useDirectusAuth composable handles the redirect internally based on the user's role.
+		console.log('Login action completed. Waiting for redirection...');
 
-		console.log('Login Success. Role:', roleIdStr);
-
-		// Step 3: Client-Side Redirect Logic
-
-		if (roleIdStr && campusRoleId && roleIdStr === campusRoleId) {
-			console.log('Student detected, redirecting to Dashboard...');
-			// use navigateTo to preserve state (SPA navigation)
-			await navigateTo('/campus/dashboard');
-		} else {
-			console.log('Client/Staff detected, redirecting to Portal...');
-			// Portal might be a separate app or need refresh, but try SPA first.
-			// If portal is in the same Nuxt app (layers), SPA is better.
-			await navigateTo('/portal');
-		}
 
 	} catch (err) {
 		console.error('Login error:', err);

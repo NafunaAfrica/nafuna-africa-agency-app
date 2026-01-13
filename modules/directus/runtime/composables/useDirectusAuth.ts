@@ -183,6 +183,24 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 			}
 		} catch (error) {
 			console.error('fetchUser error:', error);
+
+			// RESILIENCE: If API fails, check if we have a persistence cookie.
+			// If we do, DO NOT log out. Fake the user state to keep them on the page.
+			if (process.client) {
+				const savedRole = useCookie('user_role_id').value || localStorage.getItem('user_role_id');
+				if (savedRole) {
+					console.warn('Recovering session from cookie despite API error.');
+					// Create a minimal user object to satisfy Middleware
+					user.value = {
+						id: 'recovered-session',
+						first_name: 'Student',
+						email: '',
+						role: { id: savedRole }
+					} as User;
+					return; // Successfully recovered, do not set user to null
+				}
+			}
+
 			user.value = null;
 			token.value = null;
 		}

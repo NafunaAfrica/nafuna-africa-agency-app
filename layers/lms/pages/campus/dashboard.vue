@@ -72,7 +72,7 @@ const getCourseThumbnail = (course: any) => {
 </script>
 
 <template>
-  <PageContainer>
+  <PageContainer class="px-4 sm:px-6 lg:px-8 py-8">
     <!-- Illustration -->
     <img class="w-48 ml-auto mr-0 hidden md:block" src="~/assets/illustrations/tokyo-luminous-table-lamp-on-boxes.svg" alt="Illustration" />
     

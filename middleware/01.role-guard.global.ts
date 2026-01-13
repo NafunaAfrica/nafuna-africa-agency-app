@@ -64,7 +64,7 @@ export default defineNuxtRouteMiddleware((to) => {
 
         // Protected Campus Pages (e.g. /campus/dashboard)
         // If I am NOT a student (e.g. I am a Client), I shouldn't be here.
-        if (roleId && roleId !== campusRoleId) {
+        if (roleId && roleId !== 'undefined' && roleId !== campusRoleId) {
             // Allow login/register pages explicitly
             if (['/campus/login', '/campus/register'].includes(to.path)) return;
 

@@ -10,6 +10,7 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 	const $directus = nuxtApp.$directus as RestClient<Schema> & AuthenticationClient<Schema>;
 
 	const user: Ref<User | null | undefined> = useState('user');
+	const token = useState<string | null>('directus_token');
 
 	const config = useRuntimeConfig();
 
@@ -25,6 +26,7 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 			const response = await $directus.login(email, password);
 
 			_loggedIn.set(true);
+			token.value = await $directus.getToken();
 
 			// Get basic user info from SDK
 			const userResponse = await $directus.request(
@@ -46,6 +48,13 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 					console.log('=== ROLE API RESPONSE ===');
 					console.log('roleResponse:', roleResponse);
 					userRoleId = roleResponse?.roleId || undefined;
+
+					// CRITICAL FIX: Merge role back into user object so middleware sees it
+					if (userRoleId && user.value) {
+						// Ensure role object structure exists
+						(user.value as any).role = { id: userRoleId };
+					}
+
 				} catch (roleError) {
 					console.error('Failed to fetch role:', roleError);
 				}
@@ -100,7 +109,7 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 	}
 
 	async function logout() {
-		const token = await $directus.getToken();
+		const tokenVal = await $directus.getToken();
 
 		await $directus.logout();
 
@@ -115,6 +124,7 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 		}
 
 		user.value = null;
+		token.value = null;
 
 		await clearNuxtData();
 		await navigateTo('/auth/signin');
@@ -123,9 +133,10 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 	async function fetchUser(params?: object) {
 		try {
 			// Check if we have a valid session
-			const token = await $directus.getToken();
+			const currentToken = await $directus.getToken();
+			token.value = currentToken || null;
 
-			if (!token) {
+			if (!currentToken) {
 				user.value = null;
 				return;
 			}
@@ -149,7 +160,13 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 					console.log('=== ROLE API RESPONSE (fetchUser) ===');
 					console.log('roleResponse:', roleResponse);
 					if (roleResponse?.roleId) {
-						localStorage.setItem('user_role_id', roleResponse.roleId.toString().trim());
+						const rId = roleResponse.roleId.toString().trim();
+						localStorage.setItem('user_role_id', rId);
+
+						// Merge role back into user object
+						if (user.value) {
+							(user.value as any).role = { id: rId };
+						}
 
 						// SYNC COOKIE (CRITICAL FOR PERSISTENCE)
 						if (process.client && typeof localStorage !== 'undefined') {
@@ -157,7 +174,7 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 								maxAge: 60 * 60 * 24 * 7,
 								path: '/'
 							});
-							roleCookie.value = roleResponse.roleId.toString().trim();
+							roleCookie.value = rId;
 						}
 					}
 				} catch (roleError) {
@@ -167,11 +184,13 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 		} catch (error) {
 			console.error('fetchUser error:', error);
 			user.value = null;
+			token.value = null;
 		}
 	}
 
 	return {
 		user,
+		token,
 		login,
 		logout,
 		fetchUser,

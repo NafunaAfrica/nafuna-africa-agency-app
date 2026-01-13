@@ -136,10 +136,10 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 			const currentToken = await $directus.getToken();
 			token.value = currentToken || null;
 
-			if (!currentToken) {
-				user.value = null;
-				return;
-			}
+			// if (!currentToken) {
+			// 	user.value = null;
+			// 	return;
+			// }
 
 			// Get basic user info from SDK
 			const userResponse = await $directus.request(

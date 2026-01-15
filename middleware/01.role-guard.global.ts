@@ -12,9 +12,20 @@ export default defineNuxtRouteMiddleware((to) => {
 
     // Get Role ID safely (Handle object vs string)
     // The previous code had crashes here, so we use defensive checks.
-    const userRole = user.value.role && typeof user.value.role === 'object'
+    // Get Role ID safely (Handle object vs string)
+    // The previous code had crashes here, so we use defensive checks.
+    let userRole = user.value.role && typeof user.value.role === 'object'
         ? (user.value.role as any).id
         : user.value.role;
+
+    // Fallback: If state is missing role (hydration issue), check the cookie we set on Login
+    if (!userRole) {
+        const cookieRole = useCookie('user_role_id').value;
+        if (cookieRole) {
+            userRole = cookieRole;
+            // console.log('[Role Guard] Recovered role from cookie:', userRole);
+        }
+    }
 
     const roleId = String(userRole || '').trim().toLowerCase();
 

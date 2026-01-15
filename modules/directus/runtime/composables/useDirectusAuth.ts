@@ -1,4 +1,4 @@
-import { readMe, passwordRequest, passwordReset } from '@directus/sdk';
+import { readMe, updateMe, passwordRequest, passwordReset } from '@directus/sdk';
 import type { RestClient, AuthenticationClient } from '@directus/sdk';
 import type { Schema } from '~/types/schema';
 import type { User } from '~/types';

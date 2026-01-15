@@ -7,9 +7,12 @@ const route = useRoute()
 const slug = route.params.slug as string
 const { token } = useDirectusAuth()
 
-const getAssetUrl = (id: string) => {
-  if (!id) return ''
-  const base = `${useRuntimeConfig().public.directusUrl}/assets/${id}`
+const getAssetUrl = (asset: any) => {
+  if (!asset) return ''
+  // Handle if asset is expanded object or just ID
+  const fileId = typeof asset === 'object' ? asset.id : asset
+  
+  const base = `${useRuntimeConfig().public.directusUrl}/assets/${fileId}`
   return token.value ? `${base}?access_token=${token.value}` : base
 }
 

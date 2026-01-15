@@ -66,7 +66,11 @@ onMounted(() => {
 // Helper to safely get thumbnail
 const getCourseThumbnail = (course: any) => {
   if (!course?.thumbnail) return null
-  const base = `${useRuntimeConfig().public.directusUrl}/assets/${course.thumbnail}`
+  // Handle if thumbnail is expanded object or just ID
+  const fileId = typeof course.thumbnail === 'object' ? course.thumbnail.id : course.thumbnail
+  
+  const base = `${useRuntimeConfig().public.directusUrl}/assets/${fileId}`
+  // Append access token if available to ensure we can see private assets
   return token.value ? `${base}?access_token=${token.value}` : base
 }
 </script>

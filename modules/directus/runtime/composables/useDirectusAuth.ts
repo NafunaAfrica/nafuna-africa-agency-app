@@ -206,12 +206,31 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 		}
 	}
 
+	async function updateUser(data: Partial<User>) {
+		try {
+			// Update user in Directus
+			const response = await $directus.request(updateMe(data));
+
+			// Update local state
+			if (user.value) {
+				user.value = { ...user.value, ...response } as User;
+			}
+
+			return response;
+		} catch (err) {
+			console.error('Failed to update user:', err);
+			throw err;
+		}
+	}
+
 	return {
 		user,
 		token,
 		login,
 		logout,
 		fetchUser,
+		updateUser,
 		_loggedIn,
+		isLoggedIn: computed(() => !!user.value)
 	};
 }

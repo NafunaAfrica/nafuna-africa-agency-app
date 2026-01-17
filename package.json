@@ -48,7 +48,8 @@
 		"stripe": "^17.7.0",
 		"uuid": "^11.1.0",
 		"v-perfect-signature": "^1.4.0",
-		"vue-dompurify-html": "^5.2.0"
+		"vue-dompurify-html": "^5.2.0",
+		"zod": "^3.24.1"
 	},
 	"packageManager": "pnpm@9.6.0",
 	"engines": {

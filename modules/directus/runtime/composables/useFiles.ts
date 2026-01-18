@@ -7,16 +7,22 @@ export default function useFiles() {
 	function fileUrl(fileId: string) {
 		if (!fileId) return undefined;
 
+		// Get token to access private assets
+		const token = useState<string | null>('directus_token');
+		let url = '';
+
 		if (typeof fileId === 'string') {
-			return `${config.public.directus.rest.baseUrl}/assets/${fileId}`;
+			url = `${config.public.directus.rest.baseUrl}/assets/${fileId}`;
+		} else if (fileId as File) {
+			// Handle case where fileId is an object<File>
+			url = `${config.public.directus.rest.baseUrl}/assets/${(fileId as File).id}`;
 		}
 
-		// Handle case where fileId is an object<File>
-		if (fileId as File) {
-			return `${config.public.directus.rest.baseUrl}/assets/${(fileId as File).id}`;
+		if (url && token.value) {
+			url += `?access_token=${token.value}`;
 		}
 
-		return undefined;
+		return url || undefined;
 	}
 
 	return {

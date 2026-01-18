@@ -64,15 +64,7 @@ onMounted(() => {
 })
 
 // Helper to safely get thumbnail
-const getCourseThumbnail = (course: any) => {
-  if (!course?.thumbnail) return null
-  // Handle if thumbnail is expanded object or just ID
-  const fileId = typeof course.thumbnail === 'object' ? course.thumbnail.id : course.thumbnail
-  
-  const base = `${useRuntimeConfig().public.directusUrl}/assets/${fileId}`
-  // Append access token if available to ensure we can see private assets
-  return token.value ? `${base}?access_token=${token.value}` : base
-}
+const { fileUrl } = useFiles()
 </script>
 
 <template>
@@ -115,8 +107,8 @@ const getCourseThumbnail = (course: any) => {
                   <!-- Thumbnail -->
                    <div class="w-20 h-14 rounded overflow-hidden bg-gray-100 dark:bg-gray-900 flex-shrink-0">
                        <img 
-                        v-if="getCourseThumbnail((enrollment.course_id as any))"
-                        :src="getCourseThumbnail((enrollment.course_id as any))" 
+                        v-if="(enrollment.course_id as any)?.thumbnail"
+                        :src="fileUrl((enrollment.course_id as any)?.thumbnail)" 
                         class="w-full h-full object-cover"
                       >
                    </div>

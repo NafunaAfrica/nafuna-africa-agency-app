@@ -12,6 +12,14 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 	const user: Ref<User | null | undefined> = useState('user');
 	const token = useState<string | null>('directus_token');
 
+	// CRITICAL: Explicit token cookie for SSR and Image rendering
+	const tokenCookie = useCookie('directus_token', {
+		maxAge: 60 * 60 * 24 * 7, // 1 week
+		sameSite: 'lax',
+		secure: true,
+		path: '/'
+	});
+
 	const config = useRuntimeConfig();
 
 	const _loggedIn = {
@@ -26,7 +34,11 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 			const response = await $directus.login(email, password);
 
 			_loggedIn.set(true);
-			token.value = await $directus.getToken();
+
+			// SYNC TOKEN
+			const accessToken = await $directus.getToken();
+			token.value = accessToken;
+			tokenCookie.value = accessToken || null;
 
 			// Get basic user info from SDK
 			const userResponse = await $directus.request(
@@ -123,6 +135,7 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 			roleCookie.value = null;
 		}
 
+		tokenCookie.value = null;
 		user.value = null;
 		token.value = null;
 
@@ -132,11 +145,18 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 
 	async function fetchUser(params?: object) {
 		try {
-			// Check if we have a valid session
-			const currentToken = await $directus.getToken();
-			token.value = currentToken || null;
+			// Check if we have a valid session via Cookie first (SSR friendly)
+			if (tokenCookie.value) {
+				token.value = tokenCookie.value;
+				await $directus.setToken(tokenCookie.value);
+			} else {
+				// Fallback to SDK (mostly for client side initially)
+				const currentToken = await $directus.getToken();
+				token.value = currentToken || null;
+			}
 
-			// if (!currentToken) {
+			// If no token, we can't fetch user
+			// if (!token.value) {
 			// 	user.value = null;
 			// 	return;
 			// }
@@ -188,7 +208,7 @@ export default function useDirectusAuth<DirectusSchema extends object>() {
 			// If we do, DO NOT log out. Fake the user state to keep them on the page.
 			if (process.client) {
 				const savedRole = useCookie('user_role_id').value || localStorage.getItem('user_role_id');
-				if (savedRole) {
+				if (savedRole && tokenCookie.value) {
 					console.warn('Recovering session from cookie despite API error.');
 					// Create a minimal user object to satisfy Middleware
 					user.value = {

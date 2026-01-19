@@ -200,7 +200,7 @@ const emit = defineEmits(['close']);
 			</div>
 			<div v-if="task?.form">
 				<VLabel label="Form" />
-				<UForm :form="task.form as Form" />
+				<BuilderForm :form="task.form as Form" />
 			</div>
 			<div v-if="task?.embed_url">
 				<VLabel label="Embed" />

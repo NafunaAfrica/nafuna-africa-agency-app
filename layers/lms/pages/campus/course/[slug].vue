@@ -9,7 +9,7 @@ const { fileUrl } = useFiles()
 
 const { fetchCourseBySlug, getTotalLessons, formatDuration, getTotalDuration } = useCourses()
 const { fetchEnrollmentByCourse, enrollInCourse } = useEnrollments()
-const { fetchLessonProgress, startLesson, getLessonStatus } = useLessonProgress()
+const { fetchLessonProgress, startLesson, getLessonStatus, updateWatchProgress, markLessonComplete } = useLessonProgress()
 
 const course = ref<any>(null)
 const enrollment = ref<any>(null)
@@ -17,6 +17,38 @@ const progressList = ref<any[]>([])
 const currentLesson = ref<any>(null)
 const isLoading = ref(true)
 const isEnrolling = ref(false)
+
+// Logic for progress updates
+const handleProgress = async (percentage: number) => {
+  if (!currentLesson.value || !enrollment.value) return
+  
+  // Find current progress record
+  const progressRecord = progressList.value.find(p => p.lesson_id === currentLesson.value.id)
+  
+  if (progressRecord && progressRecord.status !== 'completed') {
+    // Only update every 5% to avoid spamming or if near completion
+    if (Math.round(percentage) % 5 === 0 || percentage >= 90) {
+      // Calculate time spent (approximate based on percentage)
+      // Note: VideoPlayer only gives percentage. Ideally we need time. 
+      // For now, we update percentage.
+      await updateWatchProgress(progressRecord.id, percentage, 0)
+      
+      // Update local state
+      progressList.value = await fetchLessonProgress(enrollment.value.id)
+    }
+  }
+}
+
+const handleComplete = async () => {
+   if (!currentLesson.value || !enrollment.value) return
+   
+   const progressRecord = progressList.value.find(p => p.lesson_id === currentLesson.value.id)
+   if (progressRecord) {
+     await markLessonComplete(progressRecord.id)
+     // Refresh data
+     progressList.value = await fetchLessonProgress(enrollment.value.id)
+   }
+}
 
 // Load course data
 const loadData = async () => {
@@ -144,6 +176,8 @@ onMounted(loadData)
             v-if="currentLesson"
             :video-url="currentLesson.video_url || ''"
             :title="currentLesson.title"
+            @progress="handleProgress"
+            @complete="handleComplete"
           />
           <div v-if="currentLesson" class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ currentLesson.title }}</h2>

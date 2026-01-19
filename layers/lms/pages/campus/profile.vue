@@ -40,16 +40,28 @@ const state = reactive({
   bio: user.value?.description || '', // Directus uses 'description' for bio usually
 })
 
-async function onSubmit(event: FormSubmitEvent<Schema>) {
+async function handleSubmit() {
+  // Validate with Zod
+  const result = schema.safeParse(state)
+  if (!result.success) {
+    const errorMsg = result.error.errors[0]?.message || 'Please check your inputs'
+    toast.add({
+        title: 'Validation Error',
+        description: errorMsg,
+        icon: 'i-heroicons-exclamation-circle',
+        color: 'red'
+    })
+    return
+  }
+
   loading.value = true
   try {
-    // updateUser is from useDirectusAuth
     await updateUser({
-      first_name: event.data.first_name,
-      last_name: event.data.last_name,
-      title: event.data.title,
-      location: event.data.location,
-      description: event.data.bio
+      first_name: state.first_name,
+      last_name: state.last_name,
+      title: state.title,
+      location: state.location,
+      description: state.bio
     })
     
     // Refresh user data
@@ -103,7 +115,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         <!-- Main Form -->
         <div class="md:col-span-2">
           <VCard class="p-6">
-            <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
+            <form class="space-y-6" @submit.prevent="handleSubmit">
               
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <UFormGroup label="First Name" name="first_name" required>
@@ -133,7 +145,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 <UButton type="submit" size="lg" :loading="loading" label="Save Changes" color="black" />
               </div>
 
-            </UForm>
+            </form>
           </VCard>
         </div>
       </div>

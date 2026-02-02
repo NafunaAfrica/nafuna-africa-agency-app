@@ -10,8 +10,16 @@ export interface CourseFilters {
 
 export const useCourses = () => {
   const fetchCourses = async (filters: CourseFilters = {}) => {
+    const { user } = useDirectusAuth()
+
     const filter: Record<string, any> = {
       status: { _eq: filters.status || 'published' }
+    }
+
+    // Filter special courses if user doesn't have access
+    // We cast to any because the type definition might not have the new field yet
+    if (!(user.value as any)?.has_special_access) {
+      filter.is_special_only = { _neq: true }
     }
 
     if (filters.course_type) {

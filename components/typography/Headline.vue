@@ -11,7 +11,8 @@ withDefaults(defineProps<HeadlineProps>(), {
 });
 </script>
 <template>
-	<div
+	<component
+		:is="as"
 		:class="[
 			{
 				'text-xl': size === 'xs',

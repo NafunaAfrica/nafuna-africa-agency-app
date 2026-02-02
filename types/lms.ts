@@ -47,6 +47,7 @@ export interface Course {
   price?: number
   duration_weeks?: number
   status: 'draft' | 'published' | 'archived'
+  is_special_only?: boolean
   sort?: number
   date_created?: string
   date_updated?: string

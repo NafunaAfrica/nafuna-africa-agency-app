@@ -97,7 +97,7 @@ const { data: form } = await useAsyncData(
 					<TypographyHeadline :content="`<p>Subscribe to our <em>newsletter</em></p>`" size="sm">
 						Subscribe to our newsletter
 					</TypographyHeadline>
-					<BuilderForm class="mt-4 mb-8" :form="form" />
+					<UForm class="mt-4 mb-8" :form="form" />
 				</div>
 			</nav>
 		</div>

@@ -106,7 +106,9 @@ useServerSeoMeta({
 	description: unref(metadata)?.description,
 	ogTitle: unref(metadata)?.title,
 	ogDescription: unref(metadata)?.description,
-	ogImage: () => unref(metadata)?.image,
+	ogImage: unref(metadata)?.image,
+	twitterImage: unref(metadata)?.image,
+	twitterCard: 'summary_large_image',
 });
 </script>
 

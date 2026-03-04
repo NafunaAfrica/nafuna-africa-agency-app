@@ -16,6 +16,12 @@ useSchemaOrg([
 	}),
 ]);
 
+useSeoMeta({
+	ogImage: globals?.og_image ? fileUrl(globals.og_image) : '/logos/agencyos.png',
+	twitterImage: globals?.og_image ? fileUrl(globals.og_image) : '/logos/agencyos.png',
+	twitterCard: 'summary_large_image',
+});
+
 useHead({
 	style: [
 		{

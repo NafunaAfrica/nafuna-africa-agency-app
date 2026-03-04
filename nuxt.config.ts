@@ -10,6 +10,20 @@ export default defineNuxtConfig({
 		// },
 	},
 
+	site: {
+		url: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+		name: 'Nafuna Africa',
+	},
+
+	app: {
+		head: {
+			titleTemplate: '%s %separator %siteName',
+			htmlAttrs: {
+				lang: 'en'
+			}
+		}
+	},
+
 	extends: [
 		'./layers/proposals', // Proposals module
 		'./layers/portal', // Client portal module

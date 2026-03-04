@@ -104,7 +104,6 @@ useServerSeoMeta({
 	description: () => unref(metadata)?.description,
 	ogTitle: () => unref(metadata)?.title,
 	ogDescription: () => unref(metadata)?.description,
-	ogImage: () => unref(metadata)?.image,
 });
 </script>
 <template>

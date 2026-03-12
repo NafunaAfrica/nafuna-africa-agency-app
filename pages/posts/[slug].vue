@@ -3,6 +3,7 @@ import type { PostType, SEO, Team, Category } from '~/types';
 
 const { fileUrl } = useFiles();
 const { params, path } = useRoute();
+const url = useRequestURL();
 
 const componentMap: Record<PostType, any> = {
 	blog: resolveComponent('PostBlog'),
@@ -16,7 +17,10 @@ const { data: page } = await useAsyncData(
 		return useDirectus(
 			readItems('posts', {
 				// @ts-ignore
-				filter: { slug: { _eq: params.slug as string } },
+				filter: { 
+					slug: { _eq: params.slug as string },
+					tenant_id: { _null: true }
+				},
 				limit: 1,
 				fields: [
 					'title',
@@ -62,6 +66,7 @@ const metadata = computed(() => {
 		title: seo?.title ?? pageData?.title ?? undefined,
 		description: seo?.meta_description ?? pageData?.summary ?? undefined,
 		image: unref(ogImage),
+		canonical: url.href,
 		authorImage: author?.image ? fileUrl(author.image as any) : undefined,
 		authorName: author?.name ?? undefined,
 		category: (pageData?.category as Category) ?? undefined,
@@ -98,12 +103,15 @@ useSchemaOrg([
 // Page Title
 useHead({
 	title: unref(metadata)?.title,
+	link: [{ rel: 'canonical', href: () => unref(metadata)?.canonical }],
 });
 
 // SEO Meta
 useServerSeoMeta({
 	title: unref(metadata)?.title,
 	description: unref(metadata)?.description,
+	ogType: 'article',
+	ogUrl: () => unref(metadata)?.canonical,
 	ogTitle: unref(metadata)?.title,
 	ogDescription: unref(metadata)?.description,
 	ogImage: unref(metadata)?.image,

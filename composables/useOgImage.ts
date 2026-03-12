@@ -12,21 +12,25 @@ export const useOgImage = (
 	const { fileUrl } = useFiles();
 
 	return computed(() => {
-		// Priority 1: SEO og_image (highest priority)
+		// Get base url dynamically based on priority
+		let baseId: string | File | null | undefined = undefined;
+
 		if (seo?.og_image) {
-			return fileUrl(seo.og_image);
+			baseId = seo.og_image;
+		} else if (contentImage) {
+			baseId = contentImage;
+		} else if (fallbackImage) {
+			baseId = fallbackImage;
 		}
 
-		// Priority 2: Content-specific image (e.g., post featured image)
-		if (contentImage) {
-			return fileUrl(contentImage);
-		}
+		if (!baseId) return undefined;
 
-		// Priority 3: Global fallback image (lowest priority)
-		if (fallbackImage) {
-			return fileUrl(fallbackImage);
-		}
+		const base = fileUrl(baseId as string);
+		if (!base) return undefined;
 
-		return undefined;
+		// Append resizing parameters to ensure image is perfectly sized for Facebook/WhatsApp 
+		// and compressed to under 300KB to prevent silent drop of the URL preview.
+		const separator = base.includes('?') ? '&' : '?';
+		return `${base}${separator}width=1200&height=630&fit=cover&format=jpg&quality=80`;
 	});
 };

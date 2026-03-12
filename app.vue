@@ -17,6 +17,11 @@ useSchemaOrg([
 ]);
 
 useSeoMeta({
+	// Global fallbacks — overridden by per-page useSeoMeta/useServerSeoMeta
+	title: globals?.title ?? 'Nafuna Africa',
+	description: globals?.description ?? 'Nafuna Africa is an animation studio in Harare blending African storytelling with animation, video production, game design, and AI.',
+	ogType: 'website',
+	ogSiteName: globals?.title ?? 'Nafuna Africa',
 	ogImage: globals?.og_image ? fileUrl(globals.og_image) : '/logos/agencyos.png',
 	twitterImage: globals?.og_image ? fileUrl(globals.og_image) : '/logos/agencyos.png',
 	twitterCard: 'summary_large_image',

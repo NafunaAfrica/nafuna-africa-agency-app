@@ -5,9 +5,22 @@ export default defineNuxtConfig({
 	// https://nuxt.com/docs/api/configuration/nuxt-config
 
 	routeRules: {
-		// '/**': {
-		// 	prerender: true,
-		// },
+		// Public pages — SSR for search engine discoverability
+		'/': { prerender: true },
+		'/posts/**': { ssr: true },
+		'/projects': { ssr: true },
+		'/services': { ssr: true },
+		'/about': { ssr: true },
+		'/contact-us': { ssr: true },
+		'/help/**': { ssr: true },
+		// All other CMS-driven pages get SSR too
+		'/**': { ssr: true },
+		// Private/app routes — client-side only, no crawling
+		'/auth/**': { ssr: false },
+		'/campus/**': { ssr: false },
+		'/admin/**': { ssr: false },
+		'/ai-chat': { ssr: false },
+		'/debug-auth': { ssr: false },
 	},
 
 	site: {

@@ -3,6 +3,7 @@ import type { SEO, PagesProjects, Post } from '~/types';
 
 const { globals } = useAppConfig();
 const { fileUrl } = useFiles();
+const url = useRequestURL();
 
 const { data } = await useAsyncData(
 	`projects-index`,
@@ -11,6 +12,7 @@ const { data } = await useAsyncData(
 			readItems('posts', {
 				filter: {
 					type: { _eq: 'project' },
+					tenant_id: { _null: true },
 				},
 			}),
 		);
@@ -56,6 +58,7 @@ const metadata = computed(() => {
 		title: seo?.title ?? pageData?.title ?? undefined,
 		description: (seo?.meta_description ?? pageData.headline) ? stripHTML(pageData?.headline as string) : undefined,
 		image: unref(ogImage),
+		canonical: url.href,
 	};
 });
 
@@ -78,12 +81,15 @@ useSchemaOrg([
 // Page Title
 useHead({
 	title: unref(metadata)?.title,
+	link: [{ rel: 'canonical', href: () => unref(metadata)?.canonical }],
 });
 
 // SEO Meta
 useServerSeoMeta({
 	title: unref(metadata)?.title,
 	description: unref(metadata)?.description,
+	ogType: 'website',
+	ogUrl: () => unref(metadata)?.canonical,
 	ogTitle: unref(metadata)?.title,
 	ogDescription: unref(metadata)?.description,
 	ogImage: unref(metadata)?.image,
@@ -110,6 +116,7 @@ useServerSeoMeta({
 						<NuxtImg
 							v-if="project.image"
 							:src="project.image as string"
+							:alt="project.title ?? 'Project image'"
 							class="object-cover transition duration-300 group-hover:scale-110"
 						/>
 						<div

@@ -16,6 +16,7 @@ async function getPosts() {
 				status: {
 					_eq: 'published',
 				},
+				tenant_id: { _null: true },
 			},
 			limit: -1,
 		}),
@@ -80,7 +81,6 @@ async function getCategories() {
 					seo: ['canonical_url', 'sitemap_change_frequency', 'sitemap_priority'],
 				},
 			],
-
 			limit: -1,
 		}),
 	);

@@ -114,7 +114,8 @@ export default cachedEventHandler(
 				collections.map(async (collection) => {
 					const searchQuery = search ?? '';
 					const searchParam = typeof searchQuery === 'string' ? searchQuery : String(searchQuery);
-					const data = await directusServer.request(readItems(collection, { search: searchParam }));
+					const filter = collection === 'posts' ? { tenant_id: { _null: true } } : undefined;
+					const data = await directusServer.request(readItems(collection, { search: searchParam, filter }));
 
 					if (raw) {
 						return data;

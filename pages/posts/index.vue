@@ -2,12 +2,14 @@
 const { path } = useRoute();
 const { globals } = useAppConfig();
 const { fileUrl } = useFiles();
+const url = useRequestURL();
 
 const { data } = await useAsyncData(
 	path,
 	() => {
 		const postPromise = useDirectus(
 			readItems('posts', {
+				filter: { tenant_id: { _null: true } },
 				sort: ['-date_published'],
 				fields: [
 					'*',
@@ -74,6 +76,7 @@ const metadata = computed(() => {
 		title: pageData?.seo?.title ?? pageData?.title ?? undefined,
 		description: pageData?.seo?.meta_description ?? stripHTML(pageData?.headline) ?? undefined,
 		image: unref(ogImage),
+		canonical: url.href,
 	};
 });
 
@@ -96,12 +99,15 @@ useSchemaOrg([
 // Page Title
 useHead({
 	title: () => unref(metadata)?.title,
+	link: [{ rel: 'canonical', href: () => unref(metadata)?.canonical }],
 });
 
 // SEO Meta
 useServerSeoMeta({
 	title: () => unref(metadata)?.title,
 	description: () => unref(metadata)?.description,
+	ogType: 'website',
+	ogUrl: () => unref(metadata)?.canonical,
 	ogTitle: () => unref(metadata)?.title,
 	ogDescription: () => unref(metadata)?.description,
 	ogImage: () => unref(metadata)?.image,

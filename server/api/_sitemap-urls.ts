@@ -17,6 +17,7 @@ async function getPosts() {
 					_eq: 'published',
 				},
 				tenant_id: { _null: true },
+				slug: { _null: false },
 			},
 			limit: -1,
 		}),
@@ -81,6 +82,9 @@ async function getCategories() {
 					seo: ['canonical_url', 'sitemap_change_frequency', 'sitemap_priority'],
 				},
 			],
+			filter: {
+				slug: { _null: false },
+			},
 			limit: -1,
 		}),
 	);
@@ -105,6 +109,7 @@ async function getHelpArticles() {
 				status: {
 					_eq: 'published',
 				},
+				slug: { _null: false },
 			},
 			limit: -1,
 		}),
@@ -131,6 +136,7 @@ async function getHelpCollections() {
 				articles: {
 					_nnull: true,
 				},
+				slug: { _null: false },
 			},
 			limit: -1,
 		}),

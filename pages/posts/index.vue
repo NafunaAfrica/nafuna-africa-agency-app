@@ -133,7 +133,7 @@ useServerSeoMeta({
 				</div>
 				<div class="space-y-4 lg:col-span-3">
 					<TypographyTitle>Featured Article</TypographyTitle>
-					<PostCard :post="page?.featured_post" direction="horizontal" />
+					<PostCard v-if="page?.featured_post" :post="page?.featured_post" direction="horizontal" />
 				</div>
 			</div>
 			<div class="space-y-4">

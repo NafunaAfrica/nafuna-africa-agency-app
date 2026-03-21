@@ -8,7 +8,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 	const route = useRoute();
 	const config = useRuntimeConfig();
 
-	const directus = createDirectus<Schema>(joinURL(config.public.siteUrl, '/api/proxy'), { globals: { fetch: $fetch } })
+	const directus = createDirectus<Schema>('/api/proxy', { globals: { fetch: $fetch } })
 		.with(authentication('session'))
 		.with(rest());
 
